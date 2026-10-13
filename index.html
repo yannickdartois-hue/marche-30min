@@ -1,434 +1,1342 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Marche 30' — Outil EPS · Lycée Pompidou</title>
-  <meta name="description" content="Outil de notation terrain pour l'épreuve de substitution Marche 30 minutes en EPS — BAC G&T, BAC PRO, 1ÈRES PRO. 100 % offline, iPad / tablette.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Marche 30' — EPS Pompidou</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;800;900&family=Barlow+Condensed:wght@700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
+:root{
+  --bg:#F0EDE6;--surface:#FFF;--card:#FFF;--border:#D8D3CA;--border2:#C4BEB4;
+  --text:#1A1714;--text2:#2C2825;--muted:#7A7268;--faint:#C4BEB4;
+  --input-bg:#F8F5F0;--stripe:#F8F5F0;
+  --orange:#E85A00;--orange-h:#FF6B0A;--orange-bg:#FFF0E6;
+  --blue:#1A5FD4;--blue-l:#2B72F0;--blue-bg:#EAF0FD;
+  --green:#0E8A4A;--green-l:#12A858;--green-bg:#E6F6EE;
+  --yellow:#B87000;--yellow-bg:#FFF8E6;
+  --red:#C42020;--red-bg:#FDEAEA;
+  --teal:#0E7A7A;--teal-bg:#E6F6F6;--teal-l:#12A8A8;
+  --purple:#6D28D9;--purple-bg:#EDE9FE;--purple-l:#7C3AED;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.06);
+  --tab-h:62px;--hdr-h:64px;
+  --tap-h:88px; /* hauteur bouton TAP */
+}
+/* MODE NUIT ULTRA-CONTRASTÉ (plein soleil) */
+body.dark{
+  --bg:#000;--surface:#0A0A0A;--card:#111;--border:#2A2A2A;--border2:#383838;
+  --text:#FFFFFF;--text2:#F0F0F0;--muted:#888;--faint:#2A2A2A;
+  --input-bg:#0D0D0D;--stripe:rgba(255,255,255,.04);
+  --orange:#FF6A00;--orange-h:#FF8C00;--orange-bg:rgba(255,106,0,.18);
+  --blue:#4D9EFF;--blue-l:#70B5FF;--blue-bg:rgba(77,158,255,.15);
+  --green:#00E676;--green-l:#00FF8A;--green-bg:rgba(0,230,118,.12);
+  --yellow:#FFD600;--yellow-bg:rgba(255,214,0,.12);
+  --red:#FF3D3D;--red-bg:rgba(255,61,61,.14);
+  --teal:#00E5FF;--teal-bg:rgba(0,229,255,.12);--teal-l:#00E5FF;
+  --purple:#CE93D8;--purple-bg:rgba(206,147,216,.12);--purple-l:#CE93D8;
+  --shadow:0 2px 12px rgba(0,0,0,.8);--shadow-sm:0 1px 4px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font-size:15px;overflow-x:hidden}
+input,textarea,select,button{font-family:inherit}
 
-    :root {
-      --bg: #0a0f1a;
-      --surface: #111827;
-      --border: #1e2d40;
-      --accent: #3b82f6;
-      --accent2: #10b981;
-      --text: #f1f5f9;
-      --muted: #64748b;
-      --track: #1e3a5f;
-    }
+/* HEADER */
+.header{position:fixed;top:0;left:0;right:0;height:var(--hdr-h);z-index:200;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:8px;box-shadow:var(--shadow)}
+.hlogo{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:var(--orange);flex-shrink:0}
+.hlogo span{color:var(--text);font-weight:700}
+.hexam-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;font-family:'JetBrains Mono',monospace;letter-spacing:.05em;text-transform:uppercase;border:2px solid;cursor:pointer;transition:all .15s;white-space:nowrap}
+.hexam-badge.gt{background:var(--blue-bg);color:var(--blue-l);border-color:var(--blue-l)}
+.hexam-badge.pro{background:var(--orange-bg);color:var(--orange);border-color:var(--orange)}
+.hexam-badge.cap{background:var(--teal-bg);color:var(--teal-l);border-color:var(--teal-l)}
+.hexam-badge.locked{opacity:.7;cursor:default}
+.hspace{flex:1}
+.hbtn{width:38px;height:38px;border-radius:10px;border:2px solid var(--border2);background:var(--card);color:var(--muted);cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.hbtn:active{background:var(--orange-bg);border-color:var(--orange);color:var(--orange);transform:scale(.92)}
 
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Barlow', system-ui, sans-serif;
-      font-size: 16px;
-      line-height: 1.6;
-    }
+/* TABS */
+.tabs-bar{position:fixed;top:var(--hdr-h);left:0;right:0;height:var(--tab-h);z-index:190;background:var(--surface);border-bottom:2px solid var(--border);display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 8px;gap:4px;align-items:center}
+.tabs-bar::-webkit-scrollbar{display:none}
+.tabb{flex-shrink:0;padding:0 14px;height:42px;border-radius:10px;border:2px solid transparent;background:transparent;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.tabb.active{background:var(--orange-bg);border-color:var(--orange);color:var(--orange)}
+.tabb-dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex-shrink:0}
+.tabb.done .tabb-dot{background:var(--green)}
+.tabb.partial .tabb-dot{background:var(--yellow)}
 
-    /* ── Layout ── */
-    .page {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+/* PAGES */
+.pages{padding-top:calc(var(--hdr-h) + var(--tab-h));padding-bottom:40px}
+.page{display:none;padding:14px 14px 0;max-width:700px;margin:0 auto}
+.page.active{display:block}
 
-    header {
-      padding: 48px 24px 32px;
-      text-align: center;
-      border-bottom: 1px solid var(--border);
-      position: relative;
-      overflow: hidden;
-    }
+/* CARDS */
+.card{background:var(--card);border:2px solid var(--border);border-radius:16px;margin-bottom:14px;box-shadow:var(--shadow-sm);overflow:hidden}
+.ch{display:flex;align-items:center;gap:9px;padding:13px 16px;border-bottom:2px solid var(--border);background:var(--input-bg)}
+.ch span:first-child{font-size:18px;flex-shrink:0}
+.ct{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.csub{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-left:auto;flex-shrink:0}
+.cb{padding:14px 16px}
 
-    header::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse 80% 120% at 50% -20%, #1e3a5f55 0%, transparent 70%);
-      pointer-events: none;
-    }
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 18px;height:46px;border-radius:11px;border:none;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;transition:all .15s;width:100%}
+.btn:active{transform:scale(.96)}
+.bor{background:var(--orange);color:#FFF}.bor:hover{background:var(--orange-h)}
+.bgh{background:var(--card);color:var(--text);border:2px solid var(--border2)}.bgh:hover{border-color:var(--text2)}
+.bred{background:var(--red);color:#FFF}
+.bsm{height:38px;font-size:13px;border-radius:9px}
+.bxs{height:30px;font-size:11px;border-radius:7px;padding:0 12px}
+.bteal{background:var(--teal-l);color:#000}
+.bblue{background:var(--blue-l);color:#FFF}
 
-    .school-tag {
-      display: inline-block;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--accent);
-      background: #1e3a5f55;
-      border: 1px solid #3b82f633;
-      padding: 4px 12px;
-      border-radius: 20px;
-      margin-bottom: 20px;
-    }
+/* FIELDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.field{margin-bottom:10px}
+.fl{display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;font-family:'JetBrains Mono',monospace}
+.fi{width:100%;height:44px;background:var(--input-bg);border:2px solid var(--border2);border-radius:9px;color:var(--text);font-size:15px;font-weight:600;padding:0 12px;-webkit-appearance:none;transition:border-color .15s}
+.fi:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-bg)}
+.fi::placeholder{color:var(--faint);font-weight:400}
 
-    h1 {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: clamp(2.4rem, 8vw, 4.5rem);
-      font-weight: 800;
-      line-height: 1;
-      margin-bottom: 8px;
-    }
+/* DRAG DROP */
+.dz{border:2px dashed var(--border2);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px}
+.dz:hover,.dz.over{border-color:var(--orange);background:var(--orange-bg)}
+.dzi{font-size:36px;margin-bottom:8px}.dzt{font-size:15px;font-weight:800;color:var(--text2);margin-bottom:4px}.dzs{font-size:12px;color:var(--muted);font-weight:500}
+#file-inp{display:none}
 
-    h1 span { color: var(--accent); }
+/* IMPORT TABLE */
+.itw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:2px solid var(--border);border-radius:10px;margin-bottom:10px}
+.itbl{width:100%;border-collapse:collapse;min-width:400px}
+.itbl th{background:var(--input-bg);padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;border-bottom:2px solid var(--border);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.itbl td{padding:8px 10px;font-size:13px;border-bottom:1px solid var(--border)}
+.itbl tr:last-child td{border-bottom:none}
+.itbl tr:nth-child(even) td{background:var(--stripe)}
 
-    .subtitle {
-      font-size: 1.1rem;
-      color: var(--muted);
-      max-width: 520px;
-      margin: 0 auto 32px;
-    }
+/* CHRONO */
+.chrono-wrap{background:var(--card);border:3px solid var(--border2);border-radius:20px;padding:20px 16px;margin-bottom:14px;text-align:center;box-shadow:var(--shadow);transition:border-color .3s}
+.chrono-wrap.crunning{border-color:var(--green)}.chrono-wrap.cwarning{border-color:var(--yellow)}.chrono-wrap.covertime{border-color:var(--red)}
+.chrono-display{font-family:'JetBrains Mono',monospace;font-size:52px;font-weight:700;color:var(--text);letter-spacing:.06em;line-height:1;margin-bottom:8px;transition:color .3s}
+.chrono-display.crunning{color:var(--green)}.chrono-display.cwarning{color:var(--yellow)}.chrono-display.covertime{color:var(--red)}
+.chrono-sub{font-size:12px;color:var(--muted);font-weight:700;font-family:'JetBrains Mono',monospace;margin-bottom:16px;letter-spacing:.06em;text-transform:uppercase}
+.chrono-btns{display:flex;gap:8px}
+.chrono-prog{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:12px}
+.chrono-fill{height:100%;background:var(--green);border-radius:4px;transition:width .5s linear,background .3s}
+/* Reset — bouton rouge séparé, hors de la ligne chrono */
+.reset-zone{margin-top:10px;padding-top:10px;border-top:1.5px solid var(--border)}
+.reset-btn-wrap{display:flex;align-items:center;gap:8px}
+.reset-warn{font-size:11px;color:var(--muted);font-weight:600;flex:1}
 
-    .cta-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      justify-content: center;
-    }
+/* EXAM SELECTOR */
+.exam-sel-wrap{margin-bottom:14px;background:var(--card);border:2px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+.exam-sel-label{padding:8px 14px 6px;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-family:'JetBrains Mono',monospace;border-bottom:1.5px solid var(--border);background:var(--input-bg);display:flex;align-items:center;justify-content:space-between}
+.exam-lock-badge{font-size:11px;background:var(--red-bg);color:var(--red);border:1.5px solid var(--red);border-radius:6px;padding:2px 8px;font-weight:800;font-family:'JetBrains Mono',monospace}
+.exam-sel{display:flex;padding:10px;gap:8px}
+.exam-btn{flex:1;height:64px;border-radius:12px;border:3px solid var(--border2);background:var(--input-bg);color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:900;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;transition:all .18s cubic-bezier(.34,1.4,.64,1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.exam-btn .eb-label{font-size:17px;line-height:1}
+.exam-btn .eb-sub{font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.06em;opacity:.65;line-height:1}
+.exam-btn.gt.on{background:var(--blue-l);border-color:var(--blue-l);color:#FFF;box-shadow:0 4px 18px rgba(26,95,212,.35);transform:translateY(-2px) scale(1.03)}
+.exam-btn.pro.on{background:var(--orange);border-color:var(--orange);color:#FFF;box-shadow:0 4px 18px rgba(232,90,0,.35);transform:translateY(-2px) scale(1.03)}
+.exam-btn.cap.on{background:var(--teal-l);border-color:var(--teal-l);color:#000;box-shadow:0 4px 18px rgba(14,122,122,.3);transform:translateY(-2px) scale(1.03)}
+.exam-btn.on .eb-sub{opacity:.85}
+.exam-btn:not(.on):not(:disabled):hover{border-color:var(--text2);color:var(--text2)}
+.exam-btn:active:not(:disabled){transform:scale(.94)!important}
+.exam-btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
 
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--accent);
-      color: #fff;
-      font-family: 'Barlow', sans-serif;
-      font-size: 1rem;
-      font-weight: 700;
-      padding: 14px 28px;
-      border-radius: 8px;
-      text-decoration: none;
-      transition: background .15s, transform .1s;
-    }
-    .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
-    .btn-primary:active { transform: translateY(0); }
+/* PISTE CONFIG */
+.piste-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--card);border:2px solid var(--border);border-radius:12px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
+.piste-label{font-size:12px;font-weight:700;color:var(--muted);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.piste-btns{display:flex;gap:5px;flex-wrap:wrap}
+.piste-btn{height:30px;padding:0 10px;font-size:12px;font-weight:800;border:2px solid var(--border2);border-radius:8px;background:var(--input-bg);color:var(--muted);cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:.03em;text-transform:uppercase;transition:all .15s}
+.piste-btn.on{background:var(--orange);border-color:var(--orange);color:#FFF}
+.piste-btn:active{transform:scale(.92)}
+.piste-custom{height:30px;width:70px;background:var(--input-bg);border:2px solid var(--border2);border-radius:8px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;padding:0 8px;text-align:center;-webkit-appearance:none}
+.piste-custom:focus{outline:none;border-color:var(--orange)}
 
-    .btn-secondary {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: transparent;
-      color: var(--text);
-      font-family: 'Barlow', sans-serif;
-      font-size: 1rem;
-      font-weight: 600;
-      padding: 14px 24px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      text-decoration: none;
-      transition: border-color .15s, background .15s;
-    }
-    .btn-secondary:hover { border-color: var(--accent); background: #1e3a5f33; }
+/* FILTER BAR */
+.filter-bar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.filter-search{flex:1;min-width:120px;height:36px;background:var(--input-bg);border:2px solid var(--border2);border-radius:9px;color:var(--text);font-size:14px;font-weight:600;padding:0 12px;-webkit-appearance:none;transition:border-color .15s}
+.filter-search:focus{outline:none;border-color:var(--orange)}
+.filter-search::placeholder{color:var(--faint)}
+.class-chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;border:2px solid var(--border2);background:var(--card);color:var(--muted);cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:.04em;text-transform:uppercase;transition:all .15s}
+.chip.on{border-color:var(--orange);background:var(--orange-bg);color:var(--orange)}
+.chip:active{transform:scale(.94)}
 
-    /* ── Features ── */
-    main {
-      flex: 1;
-      padding: 64px 24px;
-      max-width: 900px;
-      margin: 0 auto;
-      width: 100%;
-    }
+/* STUDENT CARDS */
+.slist{display:flex;flex-direction:column;gap:10px}
+.sc{background:var(--card);border:2.5px solid var(--border);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow-sm);transition:border-color .2s;user-select:none}
+.sc.sc-done{border-color:var(--green)}.sc.sc-abs{border-color:var(--red);opacity:.7}.sc.sc-disp{border-color:var(--purple-l);opacity:.7}
+.sc.sc-hidden{display:none}
+.sc-top{display:flex;align-items:center;gap:10px}
+.scnum{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;flex-shrink:0;color:#FFF}
+.scname{font-size:16px;font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scmeta{font-size:11px;color:var(--muted);font-weight:700;font-family:'JetBrains Mono',monospace}
+.sc-body{margin-top:10px;display:flex;align-items:center;gap:10px}
 
-    .section-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .12em;
-      color: var(--accent2);
-      margin-bottom: 16px;
-    }
+/* Chrono élève */
+.sc-chrono{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.06em;background:var(--input-bg);border:1.5px solid var(--border);border-radius:6px;padding:2px 8px;margin-left:auto;flex-shrink:0;transition:color .3s,border-color .3s}
+.sc-chrono.crunning{color:var(--green);border-color:var(--green-l)}.sc-chrono.cwarning{color:var(--yellow);border-color:var(--yellow)}.sc-chrono.covertime{color:var(--red);border-color:var(--red)}
 
-    h2 {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 40px;
-      line-height: 1.1;
-    }
+/* TAP — grand sur mobile */
+.tap-btn{flex:1;height:var(--tap-h);border-radius:14px;border:3px solid var(--green);background:var(--green-bg);font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:var(--green);cursor:pointer;transition:all .1s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;letter-spacing:.03em;text-transform:uppercase}
+.tap-btn:active,.tap-btn.tapped{transform:scale(.93);background:var(--green);color:#FFF}
+.tap-btn.zero{border-color:var(--border2);background:var(--input-bg);color:var(--muted)}
+.tap-btn:disabled{opacity:.35;cursor:not-allowed}
+.tap-count{font-size:34px;font-weight:900;font-family:'JetBrains Mono',monospace;line-height:1}
+.tap-lbl{font-size:10px;letter-spacing:.1em;opacity:.8}
 
-    .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 16px;
-      margin-bottom: 64px;
-    }
+/* Badges stats / note */
+.sc-stats{width:82px;flex-shrink:0;height:var(--tap-h);background:var(--input-bg);border:2.5px solid var(--border2);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all .2s}
+.sc-stats.ok{border-color:var(--green);background:var(--green-bg)}.sc-stats.warn{border-color:var(--yellow);background:var(--yellow-bg)}.sc-stats.bad{border-color:var(--red);background:var(--red-bg)}
+.ss-val{font-size:19px;font-weight:900;font-family:'Barlow Condensed',sans-serif;color:var(--muted)}
+.ss-lbl{font-size:9px;color:var(--muted);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+.sc-stats.ok .ss-val{color:var(--green)}.sc-stats.warn .ss-val{color:var(--yellow)}.sc-stats.bad .ss-val{color:var(--red)}
+.sc-note{width:68px;flex-shrink:0;height:var(--tap-h);background:var(--input-bg);border:2.5px solid var(--border2);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all .2s}
+.sc-note.ok{border-color:var(--green);background:var(--green-bg)}.sc-note.warn{border-color:var(--yellow);background:var(--yellow-bg)}.sc-note.bad{border-color:var(--red);background:var(--red-bg)}
+.sn-val{font-size:22px;font-weight:900;font-family:'Barlow Condensed',sans-serif;letter-spacing:.01em;color:var(--muted)}
+.sn-lbl{font-size:9px;color:var(--muted);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+.sc-note.ok .sn-val{color:var(--green)}.sc-note.warn .sn-val{color:var(--yellow)}.sc-note.bad .sn-val{color:var(--red)}
 
-    .feat {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 20px;
-    }
+/* Lap flash */
+.lap-time{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--muted);text-align:center;margin-top:4px;min-height:16px;letter-spacing:.05em}
+.lap-time.flash{animation:lapflash .9s ease-out forwards}
+@keyframes lapflash{0%{color:var(--green);transform:scale(1.12)}70%{color:var(--orange)}100%{color:var(--muted);transform:scale(1)}}
 
-    .feat-icon {
-      font-size: 1.6rem;
-      margin-bottom: 10px;
-      display: block;
-    }
+/* Boutons déplacement ↑↓ */
+.move-btns{display:flex;flex-direction:column;gap:3px;flex-shrink:0;margin-left:4px}
+.move-btn{width:30px;height:28px;border:1.5px solid var(--border2);border-radius:6px;background:var(--input-bg);color:var(--muted);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;padding:0}
+.move-btn:active{background:var(--orange-bg);border-color:var(--orange);color:var(--orange);transform:scale(.9)}
+.move-btn:disabled{opacity:.2;cursor:default;pointer-events:none}
 
-    .feat h3 {
-      font-size: .95rem;
-      font-weight: 700;
-      margin-bottom: 6px;
-      color: var(--text);
-    }
+/* Buttons row */
+.sc-btns{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.sc-btn-sm{height:30px;padding:0 9px;font-size:11px;font-weight:800;border:1.5px solid var(--border2);border-radius:6px;background:var(--input-bg);color:var(--muted);cursor:pointer;transition:all .15s;font-family:'Barlow Condensed',sans-serif;letter-spacing:.03em;text-transform:uppercase;white-space:nowrap}
+.sc-btn-sm:active{transform:scale(.93)}
+.sc-btn-sm:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.sc-btn-sm.abs-btn.on{border-color:var(--red);background:var(--red);color:#FFF}
+.sc-btn-sm.disp-btn.on{border-color:var(--purple-l);background:var(--purple-l);color:#FFF}
+.sc-btn-sm.undo-btn{border-color:var(--yellow);color:var(--yellow)}
+.sc-btn-sm.arret-btn{border-color:var(--red);color:var(--red)}
+.sc-btn-sm.arret-btn.on{background:var(--red);color:#FFF}
+.sc-btn-sm.laps-btn{border-color:var(--blue-l);color:var(--blue-l)}
 
-    .feat p {
-      font-size: .85rem;
-      color: var(--muted);
-      line-height: 1.5;
-    }
+/* Extra mètres */
+.extra-btns{display:flex;align-items:center;gap:5px;margin-top:6px;flex-wrap:wrap;padding-top:6px;border-top:1.5px solid var(--border)}
+.sc-btn-sm.extra-btn{border-color:var(--orange);color:var(--orange);font-weight:900}
+.sc-btn-sm.extra-btn:hover{background:var(--orange-bg)}
+.sc-btn-sm.extra-minus{border-color:var(--yellow);color:var(--yellow)}
+.extra-val{font-size:11px;font-weight:800;color:var(--orange);font-family:'JetBrains Mono',monospace;padding:0 4px}
 
-    /* ── Barème aperçu ── */
-    .bareme-block {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 28px;
-      margin-bottom: 64px;
-      overflow-x: auto;
-    }
+/* Indicateurs */
+.arret-indicator{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:800;font-family:'JetBrains Mono',monospace;background:var(--red-bg);color:var(--red);border:1.5px solid var(--red);margin-left:6px}
+.disp-indicator{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:800;font-family:'JetBrains Mono',monospace;background:var(--purple-bg);color:var(--purple-l);border:1.5px solid var(--purple-l);margin-left:6px}
 
-    .bareme-block h3 {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1.3rem;
-      font-weight: 700;
-      margin-bottom: 16px;
-    }
+/* Laps drawer */
+.laps-drawer{margin-top:8px;display:none;background:var(--input-bg);border:1.5px solid var(--border2);border-radius:10px;overflow:hidden}
+.laps-drawer.open{display:block}
+.laps-hdr{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:var(--border);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.laps-list{max-height:180px;overflow-y:auto}
+.lap-row{display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:12px}
+.lap-row:last-child{border-bottom:none}
+.lap-row:nth-child(even){background:var(--stripe)}
+.lap-num{width:22px;font-weight:700;color:var(--muted);flex-shrink:0;font-size:11px}
+.lap-t{font-weight:700;color:var(--text);flex:1}
+.lap-delta{font-size:11px;color:var(--orange);font-weight:700;flex-shrink:0}
+/* Graphique sparkline */
+.lap-chart{padding:10px 12px;border-top:1.5px solid var(--border)}
+.lap-chart-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-bottom:6px}
 
-    .bareme-block table {
-      border-collapse: collapse;
-      width: 100%;
-      font-size: .82rem;
-      min-width: 500px;
-    }
+/* Terrain bar */
+.terrain-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;padding:10px 14px;background:var(--card);border:2px solid var(--border);border-radius:12px;box-shadow:var(--shadow-sm)}
 
-    .bareme-block th, .bareme-block td {
-      padding: 8px 12px;
-      text-align: center;
-      border-bottom: 1px solid var(--border);
-    }
+/* Stats */
+.srow{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px}
+.sbox{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:13px 10px;text-align:center;box-shadow:var(--shadow-sm)}
+.sv{font-size:22px;font-weight:900;font-family:'Barlow Condensed',sans-serif;color:var(--orange);line-height:1;letter-spacing:.02em}
+.sl{font-size:9px;color:var(--muted);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-top:3px;font-family:'JetBrains Mono',monospace}
 
-    .bareme-block th {
-      color: var(--muted);
-      font-weight: 600;
-      font-size: .75rem;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-    }
+/* Results */
+.rw{border:2px solid var(--border);border-radius:12px;overflow:auto;-webkit-overflow-scrolling:touch}
+.rtbl{width:100%;border-collapse:collapse;min-width:500px}
+.rtbl th{background:var(--input-bg);padding:9px 10px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center;border-bottom:2px solid var(--border);font-family:'JetBrains Mono',monospace;white-space:nowrap;cursor:pointer;user-select:none}
+.rtbl th:first-child{cursor:default}
+.rtbl th.sortable:hover{background:var(--orange-bg);color:var(--orange)}
+.rtbl th.sort-asc::after{content:' ▲';font-size:9px}.rtbl th.sort-desc::after{content:' ▼';font-size:9px}
+.rtbl td{padding:10px;font-size:13px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle}
+.rtbl td:first-child{text-align:left}
+.rtbl tr:last-child td{border-bottom:none}
+.rtbl tr:nth-child(even) td{background:var(--stripe)}
+.tdn{font-weight:800;font-size:14px}.tdc{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;display:block;font-weight:600}
+.tdnote{font-size:20px;font-weight:900;font-family:'Barlow Condensed',sans-serif;letter-spacing:.02em}
+.rang-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;background:var(--input-bg);color:var(--muted);border:1.5px solid var(--border2)}
+.rang-badge.r1{background:#FFD700;color:#5A3E00;border-color:#C8A000}.rang-badge.r2{background:#C0C8D8;color:#3A4050;border-color:#909AAA}.rang-badge.r3{background:#E8A870;color:#5A3010;border-color:#C07040}
 
-    .bareme-block td:first-child {
-      text-align: left;
-      font-weight: 700;
-      color: var(--accent);
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1rem;
-    }
+/* Export */
+.export-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:9px}
 
-    .bareme-block tr:last-child td { border-bottom: none; }
+/* Alerts */
+.alert{padding:11px 13px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:11px;border:2px solid;line-height:1.5}
+.ainfo{background:var(--blue-bg);border-color:var(--blue-l);color:var(--blue-l)}
+.awarn{background:var(--yellow-bg);border-color:var(--yellow);color:var(--yellow)}
+.aok{background:var(--green-bg);border-color:var(--green-l);color:var(--green)}
 
-    /* ── Usage steps ── */
-    .steps {
-      counter-reset: step;
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      margin-bottom: 64px;
-    }
+/* Session name */
+.session-name-wrap{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--card);border:1.5px solid var(--border);border-radius:12px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
+.session-name-wrap label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap;font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.session-name-input{flex:1;height:36px;border:none;background:transparent;color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;font-weight:700;outline:none;min-width:0}
 
-    .steps li {
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
-    }
+/* Modal confirm reset */
+.modal-overlay{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--card);border:2px solid var(--border2);border-radius:18px;padding:24px 20px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.4);text-align:center}
+.modal-icon{font-size:40px;margin-bottom:12px}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.modal-msg{font-size:13px;color:var(--muted);font-weight:500;line-height:1.5;margin-bottom:20px}
+.modal-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-    .steps li::before {
-      counter-increment: step;
-      content: counter(step);
-      flex-shrink: 0;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--track);
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      font-weight: 700;
-      font-size: .85rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 2px;
-    }
+/* Fin banner */
+.fin-banner{display:none;position:fixed;top:calc(var(--hdr-h) + var(--tab-h) + 8px);left:50%;transform:translateX(-50%);z-index:400;background:var(--red);color:#FFF;padding:10px 24px;border-radius:100px;font-size:14px;font-weight:800;font-family:'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 4px 24px rgba(196,32,32,.6);white-space:nowrap;animation:finpulse 1.2s ease-in-out infinite}
+.fin-banner.show{display:block}
+@keyframes finpulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.04)}}
 
-    .steps li strong { font-weight: 700; }
-    .steps li p { font-size: .92rem; color: var(--muted); margin-top: 2px; }
+/* Pbar */
+.pbar{display:flex;gap:3px;margin-bottom:12px;height:6px}
+.pseg{flex:1;height:6px;border-radius:3px;background:var(--border);transition:background .3s}
+.pseg.done{background:var(--green)}.pseg.abs{background:var(--red)}.pseg.disp{background:var(--purple-l)}
 
-    /* ── Footer ── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 24px;
-      text-align: center;
-      font-size: .82rem;
-      color: var(--muted);
-    }
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--text);color:var(--bg);padding:12px 22px;border-radius:100px;font-size:13px;font-weight:700;z-index:9999;pointer-events:none;transition:transform .35s cubic-bezier(.34,1.56,.64,1);font-family:'JetBrains Mono',monospace;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.toast.show{transform:translateX(-50%) translateY(0)}
 
-    footer a { color: var(--accent); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
+/* Empty */
+.empty{padding:60px 20px;text-align:center;color:var(--muted)}
+.eic{font-size:44px;margin-bottom:12px}.etit{font-size:17px;font-weight:800;color:var(--text2);margin-bottom:5px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase}.esub{font-size:13px;font-weight:500}
 
-    @media (max-width: 480px) {
-      header { padding: 36px 16px 28px; }
-      main { padding: 40px 16px; }
-      .features { grid-template-columns: 1fr; }
-    }
-  </style>
+/* ═══ MODE COURSE ═══ */
+/* Toggle bouton */
+.race-toggle{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--card);border:2px solid var(--border);border-radius:12px;margin-bottom:10px;box-shadow:var(--shadow-sm);cursor:pointer;user-select:none;transition:all .2s}
+.race-toggle.on{background:var(--green-bg);border-color:var(--green-l)}
+.race-toggle-label{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);flex:1}
+.race-toggle.on .race-toggle-label{color:var(--green)}
+.race-switch{width:44px;height:26px;border-radius:13px;background:var(--border2);position:relative;transition:background .2s;flex-shrink:0}
+.race-switch::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#FFF;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.race-toggle.on .race-switch{background:var(--green)}
+.race-toggle.on .race-switch::after{transform:translateX(18px)}
+.race-sort-btn{padding:0 12px;height:30px;border-radius:8px;border:2px solid var(--border2);background:var(--input-bg);color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;transition:all .15s;white-space:nowrap}
+.race-sort-btn.on{border-color:var(--orange);color:var(--orange);background:var(--orange-bg)}
+.race-sort-btn:active{transform:scale(.94)}
+
+/* Grille 2 colonnes en mode course */
+body.race-mode #page-terrain .slist{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* Cards compactes */
+body.race-mode #page-terrain .sc{padding:8px 10px;border-radius:12px}
+/* Cacher ce qui n'est pas utile en course */
+body.race-mode #page-terrain .sc-body{margin-top:6px}
+body.race-mode #page-terrain .sc-stats{display:none}
+body.race-mode #page-terrain .sc-note{display:none}
+body.race-mode #page-terrain .lap-time{display:none}
+body.race-mode #page-terrain .sc-btns{display:none}
+body.race-mode #page-terrain .extra-btns{display:none}
+body.race-mode #page-terrain .laps-drawer{display:none!important}
+body.race-mode #page-terrain .move-btns{display:none}
+body.race-mode #page-terrain .sc-chrono{display:none}
+body.race-mode #page-terrain .scmeta{display:none}
+/* ABS/DISP totalement cachés */
+body.race-mode #page-terrain .sc-abs{display:none!important}
+body.race-mode #page-terrain .sc-disp{display:none!important}
+/* Tap button plus grand en mode course (prend toute la place) */
+body.race-mode #page-terrain .tap-btn{height:80px;font-size:20px;border-radius:10px}
+body.race-mode #page-terrain .tap-count{font-size:32px}
+/* Bouton undo seul visible en mode course — intégré sous le TAP */
+body.race-mode #page-terrain .sc-race-undo{display:flex!important}
+/* Masquer barres annexes en mode course */
+body.race-mode #page-terrain .exam-sel-wrap{display:none}
+body.race-mode #page-terrain .piste-bar{display:none}
+body.race-mode #page-terrain .filter-bar{display:none}
+body.race-mode #page-terrain .terrain-bar{display:none}
+body.race-mode #page-terrain .pbar{display:none}
+/* Nom plus compact */
+body.race-mode #page-terrain .scname{font-size:14px}
+/* Scnum plus petit */
+body.race-mode #page-terrain .scnum{width:28px;height:28px;font-size:13px;border-radius:8px}
+
+/* Print */
+.print-header{display:none;text-align:center;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #CCC}
+.print-header h1{font-size:18px;font-weight:900;margin-bottom:3px}.print-header p{font-size:11px;color:#666}
+@media print{
+  .header,.tabs-bar,.chrono-wrap,.exam-sel-wrap,.piste-bar,.filter-bar,.terrain-bar,.slist,.export-row,.btn,.toast,.sc,.sc-btns,.extra-btns,.fin-banner,.modal-overlay,.laps-drawer,.reset-zone{display:none!important}
+  body{background:#FFF!important;color:#000!important}
+  .page{display:block!important;padding:0!important}
+  .rtbl th,.rtbl td{color:#000!important;border-color:#CCC!important;font-size:11px!important;padding:6px 8px!important}
+  .print-header{display:block!important}.rw{border:1px solid #CCC!important;overflow:visible!important}.rtbl{min-width:0!important}.tdnote{font-size:14px!important}.srow{display:none!important}
+  @page{margin:1.5cm;size:A4 landscape}
+}
+@media(max-width:400px){
+  .srow{grid-template-columns:1fr 1fr}
+  .export-row{grid-template-columns:1fr 1fr}
+  --tap-h:96px;
+}
+/* ═══ HISTORIQUE SESSIONS ═══ */
+.hist-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.hist-item{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm)}
+.hist-item:hover{border-color:var(--border2)}
+.hist-info{flex:1;min-width:0}
+.hist-title{font-size:14px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-meta{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-weight:600;margin-top:2px}
+.hist-btn{height:32px;padding:0 11px;font-size:11px;font-weight:800;border:1.5px solid var(--border2);border-radius:7px;background:var(--input-bg);color:var(--muted);cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:.03em;text-transform:uppercase;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.hist-btn:active{transform:scale(.93)}
+.hist-btn.load{border-color:var(--blue-l);color:var(--blue-l)}
+.hist-btn.del{border-color:var(--red);color:var(--red)}
+.hist-empty{padding:24px;text-align:center;color:var(--muted);font-size:13px;font-style:italic}</style>
 </head>
 <body>
-<div class="page">
 
-  <header>
-    <div class="school-tag">Lycée Polyvalent Georges Pompidou · Castelnau-le-Lez</div>
-    <h1>Marche <span>30'</span></h1>
-    <p class="subtitle">Outil de notation terrain pour l'épreuve de substitution EPS — BAC G&T · BAC PRO · 1ÈRES PRO. 100 % offline, aucune installation.</p>
-    <div class="cta-group">
-      <a href="marche30_pompidou.html" class="btn-primary">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16"/></svg>
-        Ouvrir l'outil
-      </a>
-      <a href="https://github.com/ydartois/marche30-eps" class="btn-secondary" target="_blank" rel="noopener">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
-        GitHub
-      </a>
-    </div>
-  </header>
-
-  <main>
-    <div class="section-label">Fonctionnalités</div>
-    <h2>Tout ce qu'il faut sur le terrain</h2>
-
-    <div class="features">
-      <div class="feat">
-        <span class="feat-icon">📥</span>
-        <h3>Import Pronote</h3>
-        <p>Glisser-déposer un export CSV, XLS, XLSX ou ODS. Détection automatique des colonnes Nom / Prénom / Classe / Sexe.</p>
-      </div>
-      <div class="feat">
-        <span class="feat-icon">⏱</span>
-        <h3>Chrono 30 minutes</h3>
-        <p>Barre de progression, alerte sonore à 3 min et 3 bips à la fin. Chrono individuel live sur chaque fiche élève.</p>
-      </div>
-      <div class="feat">
-        <span class="feat-icon">👆</span>
-        <h3>Bouton TAP géant</h3>
-        <p>Un appui = un tour. Temps de passage enregistré à chaque tour. Undo disponible. Mètres partiels (+5 / +10 / +50 / +100 m) en fin d'épreuve.</p>
-      </div>
-      <div class="feat">
-        <span class="feat-icon">📊</span>
-        <h3>Barème intégré</h3>
-        <p>Calcul de note en temps réel. Barème officiel académique verrouillé au démarrage. Pénalité −0,5 pt par arrêt constaté.</p>
-      </div>
-      <div class="feat">
-        <span class="feat-icon">🏁</span>
-        <h3>Mode Course</h3>
-        <p>Grille 2 colonnes, 8 élèves visibles sans scroller. Interface épurée, ABS/DISP masqués, tri par distance en un tap.</p>
-      </div>
-      <div class="feat">
-        <span class="feat-icon">💾</span>
-        <h3>Export & Historique</h3>
-        <p>Export CSV, Excel (.xlsx), image PNG. Archivage automatique jusqu'à 20 sessions dans le navigateur.</p>
-      </div>
-      <div class="feat">
-        <span class="feat-icon">🌙</span>
-        <h3>Mode nuit contrasté</h3>
-        <p>Fond noir pur, couleurs saturées — lisible en plein soleil sur tablette.</p>
-      </div>
-      <div class="feat">
-        <span class="feat-icon">✈️</span>
-        <h3>100 % offline</h3>
-        <p>Fichier HTML unique, aucun serveur, aucune donnée transmise. Fonctionne sur iPad, iPhone et Android.</p>
-      </div>
-    </div>
-
-    <div class="section-label">Barème officiel (extrait)</div>
-    <h2>Source : académie de Montpellier</h2>
-
-    <div class="bareme-block">
-      <h3>Piste 200 m — chaque arrêt constaté = −0,5 pt</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Distance</th>
-            <th>GT ♀</th>
-            <th>GT ♂</th>
-            <th>PRO ♀</th>
-            <th>PRO ♂</th>
-            <th>1PRO ♀</th>
-            <th>1PRO ♂</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>5 000 m</td><td>20</td><td>20</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td>4 200 m</td><td>20</td><td>17</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td>3 800 m</td><td>16</td><td>13</td><td>20</td><td>17</td><td>—</td><td>18</td></tr>
-          <tr><td>3 700 m</td><td>15</td><td>12</td><td>19</td><td>16</td><td>20</td><td>17</td></tr>
-          <tr><td>3 200 m</td><td>10</td><td>7</td><td>14</td><td>11</td><td>15</td><td>12</td></tr>
-          <tr><td>2 700 m</td><td>5</td><td>2</td><td>9</td><td>6</td><td>10</td><td>7</td></tr>
-          <tr><td>2 200 m</td><td>0</td><td>—</td><td>4</td><td>1</td><td>5</td><td>2</td></tr>
-          <tr><td>1 700 m</td><td>—</td><td>—</td><td>—</td><td>—</td><td>0</td><td>—</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="section-label">Prise en main</div>
-    <h2>En 5 étapes</h2>
-
-    <ol class="steps">
-      <li>
-        <div>
-          <strong>Ouvrir l'outil</strong>
-          <p>Télécharger <code>marche30_pompidou.html</code> sur la tablette. Ouvrir dans Chrome, Safari ou Firefox — aucune connexion requise.</p>
-        </div>
-      </li>
-      <li>
-        <div>
-          <strong>Importer la liste</strong>
-          <p>Onglet <strong>Élèves</strong> → glisser-déposer l'export Pronote (CSV / XLS / XLSX / ODS) ou ajouter les élèves manuellement.</p>
-        </div>
-      </li>
-      <li>
-        <div>
-          <strong>Choisir le barème et la piste</strong>
-          <p>Sélectionner BAC G&T, BAC PRO ou 1ÈRES PRO. Régler la taille de piste (150 m, 200 m, 300 m, 400 m ou valeur libre).</p>
-        </div>
-      </li>
-      <li>
-        <div>
-          <strong>Lancer l'épreuve</strong>
-          <p>Onglet <strong>Terrain</strong> → ▶ Démarrer, puis taper le bouton TAP à chaque passage. Ajouter les mètres partiels à l'arrêt du chrono.</p>
-        </div>
-      </li>
-      <li>
-        <div>
-          <strong>Exporter les résultats</strong>
-          <p>Onglet <strong>Résultats</strong> → exporter en CSV, Excel ou PNG. La session est archivée automatiquement pour consultation ultérieure.</p>
-        </div>
-      </li>
-    </ol>
-  </main>
-
-  <footer>
-    <p>
-      Développé par <strong>Dartois Yannick</strong> — Professeur d'EPS,
-      Lycée Polyvalent Georges Pompidou, Castelnau-le-Lez (académie de Montpellier) ·
-      <a href="https://github.com/ydartois/marche30-eps" target="_blank" rel="noopener">Code source</a>
-    </p>
-  </footer>
-
+<div class="header">
+  <div class="hlogo">🚶<span> Marche</span> 30'</div>
+  <div id="hexam-badge" class="hexam-badge gt" onclick="onBadgeClick()">BAC G&T</div>
+  <div class="hspace"></div>
+  <button class="hbtn" onclick="toggleDark()" title="Mode sombre/clair">🌙</button>
+  <button class="hbtn" onclick="clearAll()" title="Effacer session">🗑</button>
 </div>
+
+<div class="tabs-bar">
+  <button class="tabb active" id="tb-import"  onclick="goTab('import')">📥 Élèves</button>
+  <button class="tabb"        id="tb-terrain" onclick="goTab('terrain')"><span class="tabb-dot"></span>🏃 Terrain</button>
+  <button class="tabb"        id="tb-results" onclick="goTab('results')">🏆 Résultats</button>
+</div>
+
+<div class="pages">
+  <div class="page active" id="page-import"></div>
+  <div class="page"        id="page-terrain"></div>
+  <div class="page"        id="page-results"></div>
+</div>
+
+<div class="fin-banner" id="fin-banner">⛔ 30 MIN — ÉPREUVE TERMINÉE !</div>
+
+<!-- Modal exam -->
+<div class="modal-overlay" id="exam-modal">
+  <div class="modal-box">
+    <div class="modal-icon">📋</div>
+    <div class="modal-title">Barème d'évaluation</div>
+    <div class="modal-msg" id="exam-modal-msg">Sélectionne le type d'examen.</div>
+    <div id="exam-modal-btns" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      <button class="btn bblue" onclick="setExam('gt');closeModal('exam-modal')">🎓 BAC G&T — Terminales Gén & Techno</button>
+      <button class="btn bor"   onclick="setExam('pro');closeModal('exam-modal')">🔧 BAC PRO — Filières professionnelles</button>
+      <button class="btn bteal" onclick="setExam('cap');closeModal('exam-modal')">📘 1ÈRES PRO — Premières professionnelles</button>
+    </div>
+    <button class="btn bgh bsm" onclick="closeModal('exam-modal')">Fermer</button>
+  </div>
+</div>
+
+<!-- Modal reset (confirmation) -->
+<div class="modal-overlay" id="reset-modal">
+  <div class="modal-box">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title">Remettre à zéro ?</div>
+    <div class="modal-msg">Le chrono, tous les tours, arrêts et mètres de chaque élève seront effacés. Les noms restent.</div>
+    <div class="modal-btns">
+      <button class="btn bgh bsm" onclick="closeModal('reset-modal')">Annuler</button>
+      <button class="btn bred bsm" onclick="doReset()">✓ Tout remettre à zéro</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="print-header" id="ph"><h1 id="ph-title"></h1><p id="ph-sub"></p></div>
+
+<script>
+// ═══════════════════════════════════════
+// BARÈME [dist, GTF, GTM, PROF, PROM, CAPF, CAPM]
+// ═══════════════════════════════════════
+var BAREME=[
+  [5000,20,20,null,null,null,null],[4900,null,20,null,null,null,null],
+  [4800,null,null,null,null,null,null],[4700,null,null,null,null,null,null],
+  [4600,null,null,null,null,null,null],[4500,null,20,null,null,null,null],
+  [4400,null,19,null,null,null,null],[4300,null,18,null,null,null,null],
+  [4200,20,17,null,null,null,null],[4100,19,16,null,20,null,null],
+  [4000,18,15,null,19,null,20],[3900,17,14,null,18,null,19],
+  [3800,16,13,20,17,null,18],[3700,15,12,19,16,20,17],
+  [3600,14,11,18,15,19,16],[3500,13,10,17,14,18,15],
+  [3400,12,9,16,13,17,14],[3300,11,8,15,12,16,13],
+  [3200,10,7,14,11,15,12],[3100,9,6,13,10,14,11],
+  [3000,8,5,12,9,13,10],[2900,7,4,11,8,12,9],
+  [2800,6,3,10,7,11,8],[2700,5,2,9,6,10,7],
+  [2600,4,1,8,5,9,6],[2500,3,0,7,4,8,5],
+  [2400,2,null,6,3,7,4],[2300,1,null,5,2,6,3],
+  [2200,0,null,4,1,5,2],[2100,null,null,3,0,4,1],
+  [2000,null,null,2,null,3,0],[1900,null,null,1,null,2,null],
+  [1800,null,null,0,null,1,null],[1700,null,null,null,null,0,null]
+];
+// Barème pré-trié décroissant (optimisation)
+var BAREME_SORTED=BAREME.slice().sort(function(a,b){return b[0]-a[0];});
+
+function getNote(dist,exam,sexe){
+  var col=exam==='gt'?(sexe==='F'?1:2):exam==='pro'?(sexe==='F'?3:4):(sexe==='F'?5:6);
+  for(var i=0;i<BAREME_SORTED.length;i++){
+    if(BAREME_SORTED[i][0]<=dist&&BAREME_SORTED[i][col]!==null)return BAREME_SORTED[i][col];
+  }
+  return null;
+}
+function nc(n){return n===null?'':n>=12?'ok':n>=8?'warn':'bad';}
+function t2m(tours,extra){return (tours||0)*PISTE+(extra||0);}
+function ms2d(ms){var t=Math.floor(Math.abs(ms)/1000),m=Math.floor(t/60),s=t%60;return(ms<0?'-':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+var eleves=[];
+var EXAM='gt';
+var PISTE=200; // taille de piste en mètres
+var _sn='';
+var _pi=[];
+var _locked=false;
+var _sortCol='rang';var _sortDir=1;
+var _filterText='';var _filterClass='';
+var _raceMode=false;      // mode course on/off
+var _sortByTours=false;   // tri par tours actif
+var cStart=null,cRunning=false,cElapsed=0,cTimer=null;
+var DUREE=30*60*1000;
+var _finDone=false,_warnDone=false;
+var _audioCtx=null;
+
+function newEleve(n,p,c,x){return{n:n,p:p,c:c,x:x,t:0,a:0,extra:0,s:'ok',laps:[]};}
+
+function save(){
+  try{localStorage.setItem('m30',JSON.stringify({e:eleves,x:EXAM,s:_sn,t:cElapsed,l:_locked,f:_finDone,piste:PISTE}));}catch(e){}
+}
+function load(){
+  try{
+    var r=localStorage.getItem('m30');if(!r)return;
+    var d=JSON.parse(r);
+    eleves=(d.e||[]).map(function(e){return{n:e.n||'',p:e.p||'',c:e.c||'',x:e.x||'M',t:e.t||0,a:e.a||0,extra:e.extra||0,s:e.s||'ok',laps:e.laps||[]};});
+    EXAM=d.x||'gt';_sn=d.s||'';cElapsed=d.t||0;_locked=d.l||false;_finDone=d.f||false;
+    PISTE=d.piste||200;
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════
+// AUDIO
+// ═══════════════════════════════════════
+function audioCtx(){if(!_audioCtx)try{_audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}return _audioCtx;}
+function beep(f,d,v){var c=audioCtx();if(!c)return;try{var o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=f||880;g.gain.setValueAtTime(v||0.3,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+(d||0.2));o.start(c.currentTime);o.stop(c.currentTime+(d||0.2));}catch(e){}}
+function beepFin(){var c=audioCtx();if(!c)return;[0,0.5,1].forEach(function(t){try{var o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=1046;g.gain.setValueAtTime(0.5,c.currentTime+t);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+t+0.45);o.start(c.currentTime+t);o.stop(c.currentTime+t+0.5);}catch(e){}});}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+(function(){
+  load();
+  try{if(localStorage.getItem('m30_dark')==='1')document.body.classList.add('dark');}catch(e){}
+  updateBadge();renderImport();renderTerrain();renderResults();
+  if(_finDone&&cElapsed>=DUREE)document.getElementById('fin-banner').classList.add('show');
+})();
+
+// ═══════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════
+function goTab(id){
+  document.querySelectorAll('.tabb').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  var tb=document.getElementById('tb-'+id),pg=document.getElementById('page-'+id);
+  if(tb)tb.classList.add('active');if(pg)pg.classList.add('active');
+  if(id==='terrain')renderTerrain();
+  else if(id==='results')renderResults();
+  else if(id==='import')renderImport();
+}
+function updateTabDots(){
+  var tb=document.getElementById('tb-terrain');if(!tb)return;
+  var done=eleves.filter(function(e){return e.s==='ok'&&(e.t>0||e.extra>0);}).length;
+  var total=eleves.filter(function(e){return e.s!=='abs'&&e.s!=='disp';}).length;
+  tb.className=!done?'tabb':done>=total&&total?'tabb done':'tabb partial';
+}
+
+// ═══════════════════════════════════════
+// EXAM
+// ═══════════════════════════════════════
+function onBadgeClick(){if(_locked){toast('🔒 Barème verrouillé — mets en pause d\'abord');return;}openExamModal();}
+function openExamModal(){
+  document.getElementById('exam-modal-msg').textContent=_locked?'🔒 Chrono actif — barème verrouillé.':'Sélectionne le type d\'examen.';
+  document.getElementById('exam-modal-btns').style.display=_locked?'none':'';
+  document.getElementById('exam-modal').classList.add('open');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function setExam(ex){
+  if(_locked){toast('🔒 Barème verrouillé');return;}
+  EXAM=ex;updateBadge();save();
+  ['gt','pro','cap'].forEach(function(e){var b=document.querySelector('.exam-btn.'+e);if(b)b.classList.toggle('on',e===EXAM);});
+  renderResults();toast('Barème : '+examLabel());
+}
+function examLabel(){return{gt:'BAC G&T',pro:'BAC PRO',cap:'1ÈRES PRO'}[EXAM]||EXAM;}
+function updateBadge(){var b=document.getElementById('hexam-badge');if(!b)return;b.textContent=examLabel()+(_locked?' 🔒':'');b.className='hexam-badge '+EXAM+(_locked?' locked':'');}
+function lockExam(){_locked=true;updateBadge();_syncExamBtns();save();}
+function unlockExam(){_locked=false;updateBadge();_syncExamBtns();save();}
+function _syncExamBtns(){
+  ['gt','pro','cap'].forEach(function(ex){var b=document.querySelector('.exam-btn.'+ex);if(!b)return;b.disabled=_locked;b.classList.toggle('on',ex===EXAM);});
+  var lk=document.getElementById('exam-lock-label');if(lk)lk.style.display=_locked?'':'none';
+}
+
+// ═══════════════════════════════════════
+// PISTE
+// ═══════════════════════════════════════
+function setPiste(m){
+  PISTE=m;save();
+  document.querySelectorAll('.piste-btn').forEach(function(b){b.classList.toggle('on',parseInt(b.dataset.m)===PISTE);});
+  var ci=document.getElementById('piste-custom-inp');if(ci)ci.value=[150,200,300,400].indexOf(PISTE)<0?PISTE:'';
+  // Recalculer toutes les cards
+  for(var i=0;i<eleves.length;i++)updateCard(i);
+  renderResults();
+  toast('Piste : '+PISTE+'m par tour');
+}
+function setPisteCustom(val){
+  var m=parseInt(val);if(!m||m<50||m>1000)return;
+  setPiste(m);
+}
+
+// ═══════════════════════════════════════
+// CHRONO
+// ═══════════════════════════════════════
+function cTick(){
+  if(!cRunning)return;
+  var now=Date.now();cElapsed+=(now-cStart);cStart=now;
+  renderChronoDisplay();_updateAllElvChronos();
+  var rem=DUREE-cElapsed;
+  if(!_warnDone&&rem<=3*60*1000&&rem>0){_warnDone=true;beep(660,0.3,0.3);toast('⚠️ 3 minutes restantes !');}
+  if(!_finDone&&cElapsed>=DUREE){_finDone=true;beepFin();document.getElementById('fin-banner').classList.add('show');toast('⛔ 30 MIN — ÉPREUVE TERMINÉE !');save();}
+}
+function startChrono(){
+  if(cRunning)return;
+  audioCtx();cStart=Date.now();cRunning=true;
+  clearInterval(cTimer);cTimer=setInterval(cTick,500);
+  lockExam();renderChronoDisplay();save();
+  toast('⏱ Chrono démarré');
+}
+function pauseChrono(){
+  if(!cRunning)return;
+  cTick();clearInterval(cTimer);cTimer=null;cRunning=false;
+  unlockExam();renderChronoDisplay();save();
+  toast('⏸ Pause');
+}
+// Reset : ouvre la modal de confirmation
+function confirmReset(){document.getElementById('reset-modal').classList.add('open');}
+function doReset(){
+  closeModal('reset-modal');
+  clearInterval(cTimer);cTimer=null;cRunning=false;cElapsed=0;cStart=null;
+  _finDone=false;_warnDone=false;
+  document.getElementById('fin-banner').classList.remove('show');
+  eleves.forEach(function(e){e.t=0;e.a=0;e.extra=0;e.laps=[];if(e.s!=='abs'&&e.s!=='disp')e.s='ok';});
+  unlockExam();save();renderTerrain();renderResults();updateTabDots();
+  toast('🔄 Tout remis à zéro');
+}
+function renderChronoDisplay(){
+  var el=document.getElementById('chrono-val');if(!el)return;
+  var sub=document.getElementById('chrono-sub'),fill=document.getElementById('chrono-fill'),wrap=document.getElementById('chrono-wrap');
+  var sB=document.getElementById('chrono-start'),pB=document.getElementById('chrono-pause');
+  var over=cElapsed>=DUREE,warn=!over&&(DUREE-cElapsed)<3*60*1000;
+  var pct=Math.min(100,cElapsed/DUREE*100);
+  el.textContent=ms2d(cElapsed);
+  el.className='chrono-display'+(over?' covertime':warn?' cwarning':cRunning?' crunning':'');
+  if(wrap)wrap.className='chrono-wrap'+(over?' covertime':warn?' cwarning':cRunning?' crunning':'');
+  if(fill){fill.style.width=pct+'%';fill.style.background=over?'var(--red)':warn?'var(--yellow)':'var(--green)';}
+  if(sub)sub.textContent=over?'⛔ Épreuve terminée':cRunning?'Reste : '+ms2d(DUREE-cElapsed):cElapsed>0?'En pause — '+ms2d(DUREE-cElapsed)+' restant':'Durée : 30 min · Piste '+PISTE+'m';
+  if(sB)sB.style.display=cRunning?'none':'';
+  if(pB)pB.style.display=cRunning?'':'none';
+}
+function _updateAllElvChronos(){
+  var over=cElapsed>=DUREE,warn=!over&&(DUREE-cElapsed)<3*60*1000;
+  var cls='sc-chrono'+(over?' covertime':warn?' cwarning':cRunning?' crunning':'');
+  var txt=ms2d(cElapsed);
+  for(var i=0;i<eleves.length;i++){var el=document.getElementById('elv-chrono-'+i);if(el){el.textContent=txt;el.className=cls;}}
+}
+
+// ═══════════════════════════════════════
+// IMPORT
+// ═══════════════════════════════════════
+function renderImport(){
+  var p=document.getElementById('page-import');if(!p)return;
+  var banner=eleves.length?'<div class="alert aok" style="display:flex;align-items:center;justify-content:space-between;gap:10px"><span>🔄 <strong>'+eleves.length+'</strong> élèves · '+examLabel()+'</span><button onclick="clearAll()" style="font-size:11px;font-weight:800;border:none;background:transparent;color:var(--green);cursor:pointer;text-decoration:underline">Effacer</button></div>':'';
+  p.innerHTML=banner+
+    '<div class="session-name-wrap"><label>📌 Session</label><input class="session-name-input" id="sni" type="text" placeholder="Ex: TG06 — 12 mars 2026" value="'+(_sn.replace(/"/g,'&quot;'))+'" oninput="_sn=this.value;save()"></div>'+
+    // Bouton archiver session courante
+    (eleves.length?'<button class="btn bgh bsm" style="margin-bottom:14px" onclick="archiveSession()">🗃 Archiver la session courante</button>':'')+
+    '<div class="card"><div class="ch"><span>📥</span><span class="ct">Importer depuis Pronote</span><span class="csub">CSV · XLS · XLSX · ODS</span></div><div class="cb">'+
+    '<div class="dz" id="dz" onclick="document.getElementById(\'fi\').click()" ondragover="dzO(event)" ondragleave="dzL()" ondrop="dzD(event)"><div class="dzi">📂</div><div class="dzt">Glisser le fichier Pronote ici</div><div class="dzs">CSV · XLS · XLSX · ODS (LibreOffice / OpenOffice) · toucher pour parcourir</div></div>'+
+    '<input type="file" id="fi" accept=".csv,.xls,.xlsx,.ods,.ots" onchange="loadFile(event)">'+
+    '<div class="alert ainfo" style="margin-top:8px"><strong>📋 Export Pronote :</strong><br><span style="font-size:12px;line-height:1.9">1. Ressources → Élèves → sélectionner la classe<br>2. Copier → coller dans Excel / LibreOffice → enregistrer<br>3. Glisser ici ↑</span></div>'+
+    '<button class="btn bgh bsm" onclick="loadDemo()">🎭 Données démo</button>'+
+    '</div></div>'+
+    '<div id="imp-prev" style="display:none"><div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;font-family:JetBrains Mono,monospace">Aperçu — <span id="imp-n">0</span> élève(s)</div>'+
+    '<div class="itw"><table class="itbl"><thead><tr><th>#</th><th>Nom Prénom</th><th>Classe</th><th>Sexe</th></tr></thead><tbody id="imp-tb"></tbody></table></div>'+
+    '<button class="btn bor" onclick="confirmImport()">✅ Confirmer →</button></div>'+
+    '<div class="card" style="margin-top:12px"><div class="ch"><span>✏️</span><span class="ct">Ajouter manuellement</span></div><div class="cb">'+
+    '<div class="g2"><div class="field"><label class="fl">Nom</label><input class="fi" id="mn" type="text" placeholder="MARTIN"></div><div class="field"><label class="fl">Prénom</label><input class="fi" id="mp" type="text" placeholder="Lucas"></div></div>'+
+    '<div class="g2"><div class="field"><label class="fl">Classe</label><input class="fi" id="mc" type="text" placeholder="TG1"></div><div class="field"><label class="fl">Sexe</label><div style="display:flex;gap:7px"><button class="btn bgh bsm" id="mf" onclick="setMS(\'F\')" style="flex:1">♀ Fille</button><button class="btn bor bsm" id="mm" onclick="setMS(\'M\')" style="flex:1">♂ Garçon</button></div></div></div>'+
+    '<button class="btn bgh bsm" onclick="addManual()">+ Ajouter</button></div></div>'+
+    '<div class="card" style="margin-top:12px"><div class="ch"><span>🗃</span><span class="ct">Sessions archivées</span></div><div id="hist-body" style="padding:8px 14px 14px">'+renderHistoryHTML()+'</div></div>';
+}
+var _ms='M';
+function setMS(s){_ms=s;var mf=document.getElementById('mf'),mm=document.getElementById('mm');if(mf)mf.className='btn bsm '+(s==='F'?'bor':'bgh');if(mm)mm.className='btn bsm '+(s==='M'?'bor':'bgh');}
+function addManual(){
+  var n=(document.getElementById('mn').value||'').trim().toUpperCase();var p=(document.getElementById('mp').value||'').trim();var c=(document.getElementById('mc').value||'').trim().toUpperCase();
+  if(!n||!p){toast('⚠️ Nom et prénom requis');return;}
+  eleves.push(newEleve(n,p,c,_ms));save();updateTabDots();
+  document.getElementById('mn').value='';document.getElementById('mp').value='';
+  toast('✅ '+p+' '+n+' ajouté(e)');renderImport();
+}
+function dzO(e){e.preventDefault();document.getElementById('dz').classList.add('over');}
+function dzL(){document.getElementById('dz').classList.remove('over');}
+function dzD(e){e.preventDefault();dzL();var f=e.dataTransfer.files[0];if(f)procFile(f);}
+function loadFile(e){var f=e.target.files[0];if(f)procFile(f);e.target.value='';}
+function procFile(f){
+  var ext=f.name.split('.').pop().toLowerCase();
+  if(ext==='csv'){var r=new FileReader();r.onload=function(e){parseCSV(e.target.result);};r.readAsText(f,'UTF-8');}
+  else{var r=new FileReader();r.onload=function(e){var wb=XLSX.read(e.target.result,{type:'array'});parseCSV(XLSX.utils.sheet_to_csv(wb.Sheets[wb.SheetNames[0]],{FS:';'}));};r.readAsArrayBuffer(f);}
+}
+function _detSep(l){var t={'\t':(l.match(/\t/g)||[]).length,';':(l.match(/;/g)||[]).length,',':(l.match(/,/g)||[]).length};return Object.keys(t).reduce(function(a,b){return t[a]>=t[b]?a:b;});}
+function parseCSV(raw){
+  var lines=raw.split(/\r?\n/).filter(function(l){return l.trim();});if(!lines.length){toast('⚠️ Fichier vide');return;}
+  var sep=_detSep(lines[0]);
+  var hdr=lines[0].toLowerCase().split(sep).map(function(c){return c.trim().replace(/^"|"$/g,'');});
+  function fc(tests){for(var i=0;i<hdr.length;i++)for(var j=0;j<tests.length;j++)if(tests[j].test(hdr[i]))return i;return-1;}
+  var iN=fc([/^nom/,/^last/]);var iP=fc([/^pr[eé]nom/,/^first/]);var iC=fc([/^cla/,/^div/,/^groupe/]);var iX=fc([/^sexe/,/^genre/,/^sex/,/^gender/]);
+  if(iN<0)iN=0;if(iP<0)iP=1;
+  var data=[];
+  for(var i=1;i<lines.length;i++){
+    var cols=lines[i].split(sep).map(function(c){return c.trim().replace(/^"|"$/g,'');});
+    var nom=(cols[iN]||'').trim().toUpperCase(),prenom=(cols[iP]||'').trim();
+    if(!nom&&!prenom)continue;
+    data.push({n:nom,p:prenom,c:iC>=0?(cols[iC]||'').trim().toUpperCase():'',x:(/^F/.test(iX>=0?(cols[iX]||'').trim().toUpperCase():'')||((cols[iX]||'')==='2'))?'F':'M'});
+  }
+  if(!data.length){toast('⚠️ Aucun élève — vérifier le fichier');return;}
+  _pi=data;
+  document.getElementById('imp-n').textContent=data.length;
+  document.getElementById('imp-tb').innerHTML=data.slice(0,25).map(function(e,i){
+    return '<tr><td style="color:var(--muted);font-family:JetBrains Mono,monospace;font-size:11px">'+(i+1)+'</td><td style="font-weight:800">'+e.n+' '+e.p+'</td><td style="font-size:12px">'+e.c+'</td>'+
+      '<td><span style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:5px;background:'+(e.x==='F'?'var(--orange-bg)':'var(--blue-bg)')+';color:'+(e.x==='F'?'var(--orange)':'var(--blue-l)')+'">'+e.x+'</span></td></tr>';
+  }).join('')+(data.length>25?'<tr><td colspan="4" style="font-size:11px;color:var(--muted);text-align:center">… et '+(data.length-25)+' de plus</td></tr>':'');
+  document.getElementById('imp-prev').style.display='block';
+  toast('📋 '+data.length+' élèves détectés');
+}
+function confirmImport(){if(!_pi.length)return;eleves=_pi.map(function(e){return newEleve(e.n,e.p,e.c,e.x);});_pi=[];save();updateTabDots();toast('✅ '+eleves.length+' élèves importés');goTab('terrain');}
+function loadDemo(){
+  eleves=[newEleve('MARTIN','Lucas','TG1','M'),newEleve('DUPONT','Léa','TG1','F'),newEleve('BERNARD','Noah','TG1','M'),newEleve('ROBERT','Emma','TG1','F'),newEleve('PETIT','Maxime','TG2','M'),newEleve('LEROY','Camille','TG2','F'),newEleve('MOREAU','Thomas','TG2','M'),newEleve('SIMON','Jade','TG2','F')];
+  save();updateTabDots();toast('🎭 8 élèves démo chargés');renderImport();goTab('terrain');
+}
+function clearAll(){if(!confirm('Effacer toute la session (élèves + données) ?'))return;eleves=[];cElapsed=0;cRunning=false;_finDone=false;_warnDone=false;_locked=false;clearInterval(cTimer);cTimer=null;_sn='';document.getElementById('fin-banner').classList.remove('show');save();updateBadge();renderImport();renderTerrain();renderResults();updateTabDots();toast('🗑 Session effacée');}
+
+// ═══════════════════════════════════════
+// TERRAIN
+// ═══════════════════════════════════════
+function renderTerrain(){
+  var p=document.getElementById('page-terrain');if(!p)return;
+  if(!eleves.length){p.innerHTML='<div class="empty"><div class="eic">👥</div><div class="etit">Aucun élève</div><div class="esub">Importe une liste dans l\'onglet Élèves</div><button class="btn bor bsm" style="margin-top:16px;max-width:200px" onclick="goTab(\'import\')">📥 Importer</button></div>';return;}
+
+  // Exam selector
+  var lkBadge='<span id="exam-lock-label" class="exam-lock-badge" style="'+(_locked?'':'display:none')+'">🔒 VERROUILLÉ</span>';
+  var examSel='<div class="exam-sel-wrap"><div class="exam-sel-label"><span>📋 Barème</span>'+lkBadge+'</div><div class="exam-sel">'+
+    ['gt','pro','cap'].map(function(ex){var L={gt:['BAC G&T','Tle Gén & Techno'],pro:['BAC PRO','Filières Pro'],cap:['1ÈRES PRO','Premières Pro']};return '<button class="exam-btn '+ex+(EXAM===ex?' on':'')+'"'+(_locked?' disabled':'')+' onclick="setExam(\''+ex+'\')"><span class="eb-label">'+L[ex][0]+'</span><span class="eb-sub">'+L[ex][1]+'</span></button>';}).join('')+'</div></div>';
+
+  // Piste config
+  var pistePresets=[150,200,300,400];
+  var pisteBar='<div class="piste-bar"><span class="piste-label">🏟 Piste :</span><div class="piste-btns">'+
+    pistePresets.map(function(m){return'<button class="piste-btn'+(PISTE===m?' on':'')+'" data-m="'+m+'" onclick="setPiste('+m+')">'+m+'m</button>';}).join('')+
+    '<input class="piste-custom" id="piste-custom-inp" type="number" min="50" max="1000" placeholder="autre" value="'+(pistePresets.indexOf(PISTE)<0?PISTE:'')+'" onchange="setPisteCustom(this.value)" title="Taille personnalisée">'+
+    '</div></div>';
+
+  // Chrono
+  var over=cElapsed>=DUREE,warn=!over&&(DUREE-cElapsed)<3*60*1000;
+  var pct=Math.min(100,cElapsed/DUREE*100);var fb=over?'var(--red)':warn?'var(--yellow)':'var(--green)';
+  var sub=over?'⛔ Épreuve terminée':cRunning?'Reste : '+ms2d(DUREE-cElapsed):cElapsed>0?'En pause — '+ms2d(DUREE-cElapsed)+' restant':'Durée : 30 min · Piste '+PISTE+'m';
+  var chrono='<div class="chrono-wrap'+(over?' covertime':warn?' cwarning':cRunning?' crunning':'')+'" id="chrono-wrap">'+
+    '<div class="chrono-prog"><div class="chrono-fill" id="chrono-fill" style="width:'+pct+'%;background:'+fb+'"></div></div>'+
+    '<div class="chrono-display'+(over?' covertime':warn?' cwarning':cRunning?' crunning':'')+'" id="chrono-val">'+ms2d(cElapsed)+'</div>'+
+    '<div class="chrono-sub" id="chrono-sub">'+sub+'</div>'+
+    '<div class="chrono-btns">'+
+      '<button class="btn bor" id="chrono-start" onclick="startChrono()" style="'+(cRunning?'display:none':'')+'">▶ Démarrer</button>'+
+      '<button class="btn bgh" id="chrono-pause" onclick="pauseChrono()" style="'+(cRunning?'':'display:none')+'">⏸ Pause</button>'+
+    '</div>'+
+    '<div class="reset-zone"><div class="reset-btn-wrap">'+
+      '<span class="reset-warn">⚠️ Remet à zéro le chrono et les tours de tous les élèves</span>'+
+      '<button class="btn bred bsm" onclick="confirmReset()" style="width:auto;padding:0 14px;flex-shrink:0">↺ Reset</button>'+
+    '</div></div>'+
+    '</div>';
+
+  // Classes disponibles pour filtre
+  var classes=[...new Set(eleves.map(function(e){return e.c;}).filter(Boolean))].sort();
+  var filterBar='<div class="filter-bar">'+
+    '<input class="filter-search" type="text" placeholder="🔍 Rechercher un élève…" value="'+(_filterText||'')+'" oninput="applyFilter(this.value,\'text\')">'+
+    (classes.length>1?'<div class="class-chips">'+
+      '<button class="chip'+(!_filterClass?' on':'')+'" onclick="applyFilter(\'\',\'class\')">Tous</button>'+
+      classes.map(function(c){return'<button class="chip'+(_filterClass===c?' on':'')+'" onclick="applyFilter(\''+c+'\',\'class\')">'+c+'</button>';}).join('')+
+    '</div>':'')+'</div>';
+
+  var done=eleves.filter(function(e){return e.s==='ok'&&(e.t>0||e.extra>0);}).length;
+  var absN=eleves.filter(function(e){return e.s==='abs';}).length;
+  var dispN=eleves.filter(function(e){return e.s==='disp';}).length;
+  var pbar='<div class="pbar">'+eleves.map(function(e){return'<div class="pseg'+(e.s==='abs'?' abs':e.s==='disp'?' disp':(e.t>0||e.extra>0)?' done':'')+'" title="'+e.p+' '+e.n+'"></div>';}).join('')+'</div>';
+  var bar='<div class="terrain-bar"><div><div style="font-size:13px;font-weight:800">'+done+' / '+eleves.length+' notés</div><div style="font-size:11px;color:var(--muted)">'+absN+' abs · '+dispN+' disp</div></div><button class="btn bgh bxs" onclick="goTab(\'results\')">📊 Résultats</button></div>';
+
+  // Toggle mode course + tri
+  var raceBar='<div class="race-toggle'+(_raceMode?' on':'')+'" onclick="toggleRaceMode()">'+
+    '<span style="font-size:20px">🏁</span>'+
+    '<span class="race-toggle-label">'+(_raceMode?'Mode Course ACTIF — tap pour désactiver':'Mode Course')+'</span>'+
+    '<button class="race-sort-btn'+(_sortByTours?' on':'')+'" onclick="event.stopPropagation();sortByTours()" title="Trier par nombre de tours">'+
+      (_sortByTours?'🔢 Trié par tours':'🔢 Trier par tours')+
+    '</button>'+
+    '<div class="race-switch"></div>'+
+  '</div>';
+
+  var COLS=['#E85A00','#1A5FD4','#0E8A4A','#B87000','#C42020','#7C3AED','#0E7A7A','#1A5FD4'];
+  var chronoCls='sc-chrono'+(over?' covertime':warn?' cwarning':cRunning?' crunning':'');
+  var chronoTxt=cElapsed>0?ms2d(cElapsed):'—:——';
+
+  var cards='<div class="slist">'+eleves.map(function(e,i){
+    var active=e.s==='ok';
+    var dist=t2m(e.t,e.extra),nr=active&&(e.t>0||e.extra>0)?getNote(dist,EXAM,e.x):null;
+    var pen=e.a*0.5,nf=nr!==null?Math.max(0,nr-pen):null,ncls=nc(nf);
+    var laps=e.laps||[];
+    var ind=e.a>0?' <span class="arret-indicator">⛔ '+e.a+'</span>':'';
+    if(e.s==='disp')ind+=' <span class="disp-indicator">🏥</span>';
+    // Filtre
+    var hidden=false;
+    if(_filterText){var q=_filterText.toLowerCase();hidden=!(e.n.toLowerCase().includes(q)||e.p.toLowerCase().includes(q));}
+    if(_filterClass&&e.c!==_filterClass)hidden=true;
+
+    return '<div class="sc'+(e.s==='abs'?' sc-abs':e.s==='disp'?' sc-disp':(e.t>0||e.extra>0)?' sc-done':'')+(hidden?' sc-hidden':'')+'" id="sc-'+i+'">'+
+      '<div class="sc-top">'+
+        '<div class="scnum" style="background:'+COLS[i%COLS.length]+'">'+String(i+1).padStart(2,'0')+'</div>'+
+        '<div style="flex:1;min-width:0"><div class="scname" id="scn-'+i+'">'+e.n+' '+e.p+ind+'</div><div class="scmeta">'+e.c+' · '+(e.x==='F'?'Fille':'Garçon')+'</div></div>'+
+        '<span class="'+chronoCls+'" id="elv-chrono-'+i+'">'+chronoTxt+'</span>'+
+        '<div class="move-btns">'+
+          '<button class="move-btn" onclick="moveEleve('+i+',-1)"'+(i===0?' disabled':'')+' title="Monter">▲</button>'+
+          '<button class="move-btn" onclick="moveEleve('+i+',1)"'+(i===eleves.length-1?' disabled':'')+' title="Descendre">▼</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="sc-body">'+
+        '<div style="flex:1;display:flex;flex-direction:column;gap:4px">'+
+          '<button class="tap-btn'+(e.t===0&&!e.extra?' zero':'')+'" id="tap-'+i+'" onclick="tap('+i+')"'+(!active?' disabled':'')+'>'+
+            '<span class="tap-count" id="tc-'+i+'">'+e.t+'</span><span class="tap-lbl">tours</span></button>'+
+          '<div class="lap-time" id="lap-'+i+'">'+(laps.length>0?'⏱ T'+laps.length+' — '+ms2d(laps[laps.length-1]):'')+'</div>'+
+        '</div>'+
+        '<div class="sc-stats'+(ncls?' '+ncls:'')+'" id="st-'+i+'"><div class="ss-val" id="sv-'+i+'">'+dist+'</div><div class="ss-lbl">mètres</div></div>'+
+        '<div class="sc-note'+(ncls?' '+ncls:'')+'" id="sn-'+i+'"><div class="sn-val" id="snv-'+i+'">'+(nf!==null?nf:'—')+'</div><div class="sn-lbl">/20</div></div>'+
+      '</div>'+
+      '<div class="sc-btns">'+
+        '<button class="sc-btn-sm undo-btn" id="ub-'+i+'" onclick="undo('+i+')"'+(e.t===0||!active?' disabled':'')+'>↩ −1 tour</button>'+
+        '<button class="sc-btn-sm arret-btn'+(e.a>0?' on':'')+'" id="ab-'+i+'" onclick="addArret('+i+')"'+(!active?' disabled':'')+'>⛔ Arrêt +1</button>'+
+        '<button class="sc-btn-sm undo-btn" id="ua-'+i+'" onclick="undoArret('+i+')"'+(e.a===0||!active?' disabled':'')+'>↩ Arrêt</button>'+
+        '<button class="sc-btn-sm abs-btn'+(e.s==='abs'?' on':'')+'" id="sb-abs-'+i+'" onclick="setStatut('+i+',\'abs\')">ABS</button>'+
+        '<button class="sc-btn-sm disp-btn'+(e.s==='disp'?' on':'')+'" id="sb-disp-'+i+'" onclick="setStatut('+i+',\'disp\')">🏥 Disp</button>'+
+        '<button class="sc-btn-sm laps-btn" id="laps-btn-'+i+'" onclick="toggleLaps('+i+')">📋 '+(laps.length?laps.length+' T':'Temps')+'</button>'+
+      '</div>'+
+      // Bouton undo visible uniquement en mode course
+      '<div class="sc-race-undo" style="display:none;margin-top:5px">'+
+        '<button class="sc-btn-sm undo-btn" style="width:100%;height:34px" id="rub-'+i+'" onclick="undo('+i+')"'+(e.t===0||!active?' disabled':'')+'>↩ −1 tour</button>'+
+      '</div>'+
+      '<div class="laps-drawer" id="laps-'+i+'">'+
+        '<div class="laps-hdr"><span>⏱ Passages — '+e.n+' '+e.p+'</span><button onclick="toggleLaps('+i+')" style="border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:14px">✕</button></div>'+
+        '<div class="laps-list" id="laps-list-'+i+'">'+buildLapsList(e)+'</div>'+
+        (laps.length>1?'<div class="lap-chart"><div class="lap-chart-title">Vitesse (Δ entre tours)</div>'+buildLapChart(e)+'</div>':'')+
+      '</div>'+
+      '<div class="extra-btns" id="extra-row-'+i+'">'+buildExtraRow(i,e)+'</div>'+
+    '</div>';
+  }).join('')+'</div>';
+
+  p.innerHTML=examSel+pisteBar+chrono+filterBar+pbar+bar+raceBar+cards;
+  renderChronoDisplay();
+}
+
+// ═══════════════════════════════════════
+// MODE COURSE
+// ═══════════════════════════════════════
+function toggleRaceMode(){
+  _raceMode=!_raceMode;
+  document.body.classList.toggle('race-mode',_raceMode);
+  // Re-render pour mettre à jour le toggle et masquer/afficher les éléments
+  renderTerrain();
+  if(_raceMode)toast('🏁 Mode course activé');
+  else toast('✏️ Mode normal');
+}
+
+// Trier les élèves par tours décroissants (ABS/DISP toujours en dernier)
+function sortByTours(){
+  _sortByTours=!_sortByTours;
+  if(_sortByTours){
+    eleves.sort(function(a,b){
+      // ABS/DISP en dernier
+      var aSpecial=(a.s==='abs'||a.s==='disp')?1:0;
+      var bSpecial=(b.s==='abs'||b.s==='disp')?1:0;
+      if(aSpecial!==bSpecial)return aSpecial-bSpecial;
+      // Par distance totale décroissante
+      var dA=t2m(a.t,a.extra),dB=t2m(b.t,b.extra);
+      return dB-dA;
+    });
+    save();
+  }
+  renderTerrain();
+  toast(_sortByTours?'🔢 Trié par tours (↓)':'🔢 Tri manuel restauré');
+}
+
+// ═══════════════════════════════════════
+// FILTRE
+// ═══════════════════════════════════════
+function applyFilter(val,type){
+  if(type==='text')_filterText=val;
+  else if(type==='class'){_filterClass=val;document.querySelectorAll('.chip').forEach(function(c){c.classList.toggle('on',c.textContent===(val||'Tous'));});}
+  var q=_filterText.toLowerCase();
+  for(var i=0;i<eleves.length;i++){
+    var e=eleves[i];
+    var hidden=false;
+    if(q)hidden=!(e.n.toLowerCase().includes(q)||e.p.toLowerCase().includes(q));
+    if(_filterClass&&e.c!==_filterClass)hidden=true;
+    var sc=document.getElementById('sc-'+i);if(sc)sc.classList.toggle('sc-hidden',hidden);
+  }
+}
+
+// ═══════════════════════════════════════
+// GRAPHIQUE SPARKLINE SVG
+// ═══════════════════════════════════════
+function buildLapChart(e){
+  var laps=e.laps||[];if(laps.length<2)return '';
+  var deltas=[];
+  for(var k=1;k<laps.length;k++)deltas.push(laps[k]-laps[k-1]);
+  var maxD=Math.max.apply(null,deltas);var minD=Math.min.apply(null,deltas);
+  var W=260,H=50,pad=4;
+  var pts=deltas.map(function(d,k){
+    var x=pad+(k/(deltas.length-1||1))*(W-2*pad);
+    var y=pad+(maxD===minD?0.5:(d-minD)/(maxD-minD))*(H-2*pad);
+    return x+','+y;
+  });
+  // Ligne + points
+  var polyline='<polyline points="'+pts.join(' ')+'" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linejoin="round"/>';
+  var dots=pts.map(function(pt,k){var xy=pt.split(',');return'<circle cx="'+xy[0]+'" cy="'+xy[1]+'" r="3" fill="var(--orange)"><title>T'+(k+2)+' Δ '+ms2d(deltas[k])+'</title></circle>';}).join('');
+  // Labels min/max
+  var minLbl='<text x="'+pad+'" y="'+(H-1)+'" font-size="9" fill="var(--green)" font-family="JetBrains Mono,monospace">'+ms2d(minD)+'</text>';
+  var maxLbl='<text x="'+pad+'" y="'+(pad+8)+'" font-size="9" fill="var(--red)" font-family="JetBrains Mono,monospace">'+ms2d(maxD)+'</text>';
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'" style="overflow:visible">'+polyline+dots+minLbl+maxLbl+'</svg>';
+}
+
+// ═══════════════════════════════════════
+// LAPS
+// ═══════════════════════════════════════
+function buildLapsList(e){
+  var laps=e.laps||[];if(!laps.length)return '<div class="lap-empty">Aucun tour enregistré</div>';
+  var html='';
+  for(var k=0;k<laps.length;k++){
+    var delta=k===0?laps[k]:laps[k]-laps[k-1];
+    html+='<div class="lap-row"><span class="lap-num">'+(k+1)+'</span><span class="lap-t">'+ms2d(laps[k])+'</span><span class="lap-delta">Δ '+ms2d(delta)+'</span></div>';
+  }
+  return html;
+}
+function buildExtraRow(i,e){
+  var ab=e.s!=='ok';var v=e.extra||0;
+  var html='<span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-family:JetBrains Mono,monospace;flex-shrink:0">+ mètres :</span>'+
+    '<button class="sc-btn-sm extra-btn" onclick="addExtra('+i+',5)"'+(ab?' disabled':'')+'>+5m</button>'+
+    '<button class="sc-btn-sm extra-btn" onclick="addExtra('+i+',10)"'+(ab?' disabled':'')+'>+10m</button>'+
+    '<button class="sc-btn-sm extra-btn" onclick="addExtra('+i+',50)"'+(ab?' disabled':'')+'>+50m</button>'+
+    '<button class="sc-btn-sm extra-btn" onclick="addExtra('+i+',100)"'+(ab?' disabled':'')+'>+100m</button>';
+  if(v>0)html+='<span class="extra-val">= +'+v+'m</span>'+
+    '<button class="sc-btn-sm extra-minus" onclick="subExtra('+i+',10)"'+(v<10?' disabled':'')+'>−10m</button>'+
+    '<button class="sc-btn-sm extra-minus" onclick="subExtra('+i+',50)"'+(v<50?' disabled':'')+'>−50m</button>'+
+    '<button class="sc-btn-sm extra-minus" onclick="subExtra('+i+',100)"'+(v<100?' disabled':'')+'>−100m</button>'+
+    '<button class="sc-btn-sm" onclick="resetExtra('+i+')" style="color:var(--red);border-color:var(--red)">✕ tout</button>';
+  return html;
+}
+function toggleLaps(i){var d=document.getElementById('laps-'+i);if(!d)return;d.classList.toggle('open');if(d.classList.contains('open'))d.scrollIntoView({behavior:'smooth',block:'nearest'});}
+
+// ═══════════════════════════════════════
+// ACTIONS TERRAIN
+// ═══════════════════════════════════════
+function tap(i){
+  if(eleves[i].s!=='ok')return;
+  eleves[i].t++;if(!eleves[i].laps)eleves[i].laps=[];eleves[i].laps.push(cElapsed);
+  save();updateCard(i);updateTabDots();
+  beep(880,0.07,0.12);
+  var b=document.getElementById('tap-'+i);if(b){b.classList.add('tapped');setTimeout(function(){b.classList.remove('tapped');},150);}
+  var lp=document.getElementById('lap-'+i);if(lp){lp.classList.remove('flash');void lp.offsetWidth;lp.classList.add('flash');}
+}
+function undo(i){
+  if(eleves[i].t<=0)return;
+  eleves[i].t--;
+  if(eleves[i].laps&&eleves[i].laps.length>0)eleves[i].laps.pop();
+  save();updateCard(i);updateTabDots();
+}
+function addArret(i){if(eleves[i].s!=='ok')return;eleves[i].a++;save();updateCard(i);toast('⛔ Arrêt — '+eleves[i].p+' (−0.5pt)');}
+function undoArret(i){if(eleves[i].a<=0)return;eleves[i].a--;save();updateCard(i);}
+function addExtra(i,m){if(eleves[i].s!=='ok')return;eleves[i].extra=(eleves[i].extra||0)+m;save();updateCard(i);updateTabDots();}
+function subExtra(i,m){eleves[i].extra=Math.max(0,(eleves[i].extra||0)-m);save();updateCard(i);updateTabDots();}
+function resetExtra(i){eleves[i].extra=0;save();updateCard(i);updateTabDots();}
+function moveEleve(i,dir){
+  var j=i+dir;
+  if(j<0||j>=eleves.length)return;
+  var tmp=eleves[i];eleves[i]=eleves[j];eleves[j]=tmp;
+  save();renderTerrain();
+  // Scroll pour garder la card déplacée visible
+  setTimeout(function(){
+    var sc=document.getElementById('sc-'+j);
+    if(sc)sc.scrollIntoView({behavior:'smooth',block:'nearest'});
+  },80);
+}
+
+function setStatut(i,val){
+  var cur=eleves[i].s;
+  var newS=(cur===val)?'ok':val;
+  eleves[i].s=newS;
+  if(newS==='abs'){eleves[i].t=0;eleves[i].a=0;eleves[i].extra=0;eleves[i].laps=[];}
+  // Si ABS ou DISP : déplacer l'élève en fin de liste
+  if(newS==='abs'||newS==='disp'){
+    var e=eleves.splice(i,1)[0];
+    eleves.push(e);
+    save();renderTerrain();updateTabDots();
+    return;
+  }
+  save();updateCard(i);updateTabDots();
+}
+
+// ═══════════════════════════════════════
+// UPDATE CARD
+// ═══════════════════════════════════════
+function updateCard(i){
+  var e=eleves[i];var active=e.s==='ok';
+  var dist=t2m(e.t,e.extra),nr=active&&(e.t>0||e.extra>0)?getNote(dist,EXAM,e.x):null;
+  var pen=e.a*0.5,nf=nr!==null?Math.max(0,nr-pen):null,ncls=nc(nf);
+  var laps=e.laps||[];
+
+  var sc=document.getElementById('sc-'+i);
+  if(sc)sc.className='sc'+(e.s==='abs'?' sc-abs':e.s==='disp'?' sc-disp':(e.t>0||e.extra>0)?' sc-done':'')+(sc.classList.contains('sc-hidden')?' sc-hidden':'');
+
+  var tb=document.getElementById('tap-'+i);
+  if(tb){document.getElementById('tc-'+i).textContent=e.t;tb.className='tap-btn'+(e.t===0&&!e.extra?' zero':'');tb.disabled=!active;}
+
+  var st=document.getElementById('st-'+i);if(st){st.className='sc-stats'+(ncls?' '+ncls:'');document.getElementById('sv-'+i).textContent=dist;}
+  var sn=document.getElementById('sn-'+i);if(sn){sn.className='sc-note'+(ncls?' '+ncls:'');document.getElementById('snv-'+i).textContent=nf!==null?nf:'—';}
+
+  var ind=e.a>0?' <span class="arret-indicator">⛔ '+e.a+'</span>':'';
+  if(e.s==='disp')ind+=' <span class="disp-indicator">🏥</span>';
+  var nm=document.getElementById('scn-'+i);if(nm)nm.innerHTML=e.n+' '+e.p+ind;
+
+  // Boutons via IDs
+  var ub=document.getElementById('ub-'+i);if(ub)ub.disabled=(e.t===0||!active);
+  // Bouton undo mode course
+  var rub=document.getElementById('rub-'+i);if(rub)rub.disabled=(e.t===0||!active);
+  var ab=document.getElementById('ab-'+i);if(ab){ab.disabled=!active;ab.className='sc-btn-sm arret-btn'+(e.a>0?' on':'');}
+  var ua=document.getElementById('ua-'+i);if(ua)ua.disabled=(e.a===0||!active);
+  var absb=document.getElementById('sb-abs-'+i);if(absb)absb.className='sc-btn-sm abs-btn'+(e.s==='abs'?' on':'');
+  var dispb=document.getElementById('sb-disp-'+i);if(dispb)dispb.className='sc-btn-sm disp-btn'+(e.s==='disp'?' on':'');
+
+  var segs=document.querySelectorAll('.pseg');if(segs[i])segs[i].className='pseg'+(e.s==='abs'?' abs':e.s==='disp'?' disp':(e.t>0||e.extra>0)?' done':'');
+
+  var lp=document.getElementById('lap-'+i);if(lp)lp.textContent=laps.length>0?'⏱ T'+laps.length+' — '+ms2d(laps[laps.length-1]):'';
+  var lBtn=document.getElementById('laps-btn-'+i);if(lBtn)lBtn.textContent='📋 '+(laps.length?laps.length+' T':'Temps');
+  var ll=document.getElementById('laps-list-'+i);if(ll)ll.innerHTML=buildLapsList(e);
+  // Mettre à jour le graphique aussi
+  var ld=document.getElementById('laps-'+i);
+  if(ld){var lc=ld.querySelector('.lap-chart');
+    if(laps.length>1){if(!lc){var newLc=document.createElement('div');newLc.className='lap-chart';newLc.innerHTML='<div class="lap-chart-title">Vitesse (Δ entre tours)</div>'+buildLapChart(e);ld.appendChild(newLc);}else{lc.innerHTML='<div class="lap-chart-title">Vitesse (Δ entre tours)</div>'+buildLapChart(e);}}
+  }
+  var er=document.getElementById('extra-row-'+i);if(er)er.innerHTML=buildExtraRow(i,e);
+}
+
+// ═══════════════════════════════════════
+// RÉSULTATS
+// ═══════════════════════════════════════
+function calcRes(){
+  return eleves.map(function(e,i){
+    var active=e.s==='ok';var d=t2m(e.t,e.extra),nr=active&&(e.t>0||e.extra>0)?getNote(d,EXAM,e.x):null;
+    var pen=e.a*0.5,note=nr!==null?Math.max(0,nr-pen):null;
+    return{e:e,i:i,d:d,nr:nr,pen:pen,note:note};
+  });
+}
+function getRangs(res){
+  var sorted=res.filter(function(r){return r.note!==null&&r.e.s==='ok';}).slice().sort(function(a,b){return b.note-a.note;});
+  var rangs={};var rang=1;
+  for(var i=0;i<sorted.length;i++){if(i>0&&sorted[i].note<sorted[i-1].note)rang=i+1;rangs[sorted[i].i]=rang;}
+  return rangs;
+}
+function renderResults(){
+  var p=document.getElementById('page-results');if(!p)return;
+  if(!eleves.length){p.innerHTML='<div class="empty"><div class="eic">📊</div><div class="etit">Aucun élève</div></div>';return;}
+  var res=calcRes();var rangs=getRangs(res);res.forEach(function(r){r.rang=rangs[r.i]||999;});
+  var sorted=res.slice().sort(function(a,b){
+    if(_sortCol==='rang'){return _sortDir*(a.rang-b.rang);}
+    if(_sortCol==='nom'){return _sortDir*(a.e.n<b.e.n?-1:a.e.n>b.e.n?1:0);}
+    if(_sortCol==='tours'){return _sortDir*(a.e.t-b.e.t);}
+    if(_sortCol==='dist'){return _sortDir*(a.d-b.d);}
+    if(_sortCol==='note'){return _sortDir*((a.note!==null?a.note:-1)-(b.note!==null?b.note:-1));}
+    return 0;
+  });
+  var notes=res.filter(function(r){return r.note!==null&&r.e.s==='ok';}).map(function(r){return r.note;});
+  var avg=notes.length?(notes.reduce(function(a,b){return a+b;},0)/notes.length).toFixed(1):'—';
+  var mx=notes.length?Math.max.apply(null,notes):'—';var mn=notes.length?Math.min.apply(null,notes):'—';
+  var done=res.filter(function(r){return r.e.s==='ok'&&(r.e.t>0||r.e.extra>0);}).length;
+  var stats='<div class="srow">'+sb(eleves.length,'Élèves')+sb(done,'Notés')+sb(avg,'Moyenne')+sb(mx+' / '+mn,'Max / Min')+'</div>';
+  var exp='<div class="export-row" style="margin-bottom:14px">'+
+    '<button class="btn bgh bsm" onclick="exportCSV()">📥 CSV</button>'+
+    '<button class="btn bgh bsm" onclick="exportXLSX()">📊 Excel</button>'+
+    '<button class="btn bgh bsm" onclick="doPrint()">🖨 Imprimer</button>'+
+    '<button class="btn bgh bsm" onclick="exportPNG()">📸 Image PNG</button>'+
+    '</div>';
+  function th(col,lbl){var cls='sortable'+(_sortCol===col?' sort-'+(_sortDir===1?'asc':'desc'):'');return'<th class="'+cls+'" onclick="sortR(\''+col+'\')">'+lbl+'</th>';}
+  var tbl='<div class="card"><div class="ch"><span>🏆</span><span class="ct">Résultats · '+examLabel()+'</span><span class="csub">Piste '+PISTE+'m</span></div>'+
+    '<div style="padding:0"><div class="rw"><table class="rtbl"><thead><tr><th>#</th>'+th('nom','Élève')+'<th>Sexe</th>'+th('tours','Tours')+th('dist','Distance')+'<th>Arrêts</th>'+th('note','Note /20')+'</tr></thead><tbody>';
+  sorted.forEach(function(r){
+    var e=r.e;var sp=e.s!=='ok';
+    var nc2=sp?'var(--muted)':r.note!==null?r.note>=12?'var(--green)':r.note>=8?'var(--yellow)':'var(--red)':'var(--muted)';
+    var rb=sp||r.note===null?'<span class="rang-badge">—</span>':'<span class="rang-badge'+(r.rang===1?' r1':r.rang===2?' r2':r.rang===3?' r3':'')+'">'+(r.rang<=3?['🥇','🥈','🥉'][r.rang-1]:r.rang)+'</span>';
+    var stL=e.s==='abs'?'ABS':e.s==='disp'?'DISP':'';
+    tbl+='<tr><td>'+rb+'</td>'+
+      '<td><span class="tdn">'+e.n+' '+e.p+'</span><span class="tdc">'+e.c+'</span></td>'+
+      '<td><span style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:5px;background:'+(e.x==='F'?'var(--orange-bg)':'var(--blue-bg)')+';color:'+(e.x==='F'?'var(--orange)':'var(--blue-l)')+'">'+e.x+'</span></td>'+
+      '<td style="font-family:JetBrains Mono,monospace;font-weight:700">'+(sp?stL:e.t)+'</td>'+
+      '<td style="font-family:JetBrains Mono,monospace;font-weight:700">'+(sp?stL:r.d+'m'+(e.extra>0?' (+'+e.extra+'m)':''))+'</td>'+
+      '<td>'+(sp?'—':e.a>0?'<span style="color:var(--red);font-weight:800;font-family:JetBrains Mono,monospace">−'+r.pen.toFixed(1)+'pt ('+e.a+'×)</span>':'<span style="color:var(--muted)">0</span>')+'</td>'+
+      '<td><span class="tdnote" style="color:'+nc2+'">'+(sp?stL:r.note!==null?r.note:'—')+'</span></td>'+
+    '</tr>';
+  });
+  tbl+='</tbody></table></div></div></div>';
+  document.getElementById('ph-title').textContent='Marche 30\' — EPS Pompidou · '+examLabel();
+  document.getElementById('ph-sub').textContent=(_sn||new Date().toLocaleDateString('fr-FR'))+' · Piste '+PISTE+'m · '+eleves.length+' élève(s) · Moy : '+avg+'/20';
+  p.innerHTML=stats+exp+tbl;
+}
+function sb(v,l){return'<div class="sbox"><div class="sv">'+v+'</div><div class="sl">'+l+'</div></div>';}
+function sortR(col){if(_sortCol===col)_sortDir*=-1;else{_sortCol=col;_sortDir=(col==='note'||col==='rang')?-1:1;}renderResults();}
+
+// ═══════════════════════════════════════
+// EXPORT CSV
+// ═══════════════════════════════════════
+function _buildRows(){
+  var res=calcRes();var rangs=getRangs(res);res.forEach(function(r){r.rang=rangs[r.i]||'';});
+  return res.slice().sort(function(a,b){return(a.rang||999)-(b.rang||999);}).map(function(r){
+    var e=r.e;var sp=e.s!=='ok';
+    return[r.rang||'',e.n,e.p,e.c,e.x,sp?e.s.toUpperCase():'OK',sp?'':e.t,sp?'':r.d,sp?'':e.extra,sp?e.s.toUpperCase():(r.nr!==null?r.nr:''),sp?'':e.a,sp?'':r.pen,sp?e.s.toUpperCase():(r.note!==null?r.note:'')];
+  });
+}
+var HEADERS=['Rang','Nom','Prénom','Classe','Sexe','Statut','Tours','Distance(m)','Extra(m)','Note brute','Arrêts','Pénalité','Note finale'];
+function exportCSV(){
+  var rows=_buildRows();
+  var csv=[HEADERS.join(';')].concat(rows.map(function(r){return r.join(';');}));
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv.join('\n')],{type:'text/csv;charset=utf-8'}));
+  a.download='marche30_'+((_sn||'resultats').replace(/\s+/g,'_'))+'.csv';a.click();
+  toast('📥 CSV exporté');
+}
+function exportXLSX(){
+  var rows=_buildRows();
+  var wsData=[HEADERS].concat(rows);
+  var ws=XLSX.utils.aoa_to_sheet(wsData);
+  // Largeurs colonnes
+  ws['!cols']=[{wch:6},{wch:14},{wch:12},{wch:8},{wch:6},{wch:8},{wch:7},{wch:11},{wch:9},{wch:11},{wch:8},{wch:9},{wch:12}];
+  var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Résultats');
+  XLSX.writeFile(wb,'marche30_'+((_sn||'resultats').replace(/\s+/g,'_'))+'.xlsx');
+  toast('📊 Excel exporté');
+}
+function doPrint(){goTab('results');setTimeout(function(){window.print();},300);}
+function copyClip(){
+  var rows=_buildRows();
+  var lines=[HEADERS.join('\t')].concat(rows.map(function(r){return r.join('\t');}));
+  navigator.clipboard.writeText(lines.join('\n')).then(function(){toast('📋 Copié');});
+}
+
+// ═══════════════════════════════════════
+// HISTORIQUE SESSIONS
+// ═══════════════════════════════════════
+var HIST_KEY='m30_history';
+
+function getHistory(){
+  try{var r=localStorage.getItem(HIST_KEY);return r?JSON.parse(r):[];}catch(e){return[];}
+}
+function saveHistory(hist){
+  try{localStorage.setItem(HIST_KEY,JSON.stringify(hist));}catch(e){toast('⚠️ Stockage plein — impossible d\'archiver');}
+}
+
+function archiveSession(){
+  if(!eleves.length){toast('⚠️ Aucun élève à archiver');return;}
+  var hist=getHistory();
+  var res=calcRes();var rangs=getRangs(res);
+  var notes=res.filter(function(r){return r.note!==null&&r.e.s==='ok';}).map(function(r){return r.note;});
+  var avg=notes.length?(notes.reduce(function(a,b){return a+b;},0)/notes.length).toFixed(1):null;
+  var entry={
+    id:Date.now(),
+    date:new Date().toLocaleDateString('fr-FR'),
+    session:_sn||new Date().toLocaleDateString('fr-FR'),
+    exam:EXAM,
+    piste:PISTE,
+    eleves:eleves.length,
+    avg:avg,
+    snapshot:JSON.parse(JSON.stringify({e:eleves,x:EXAM,s:_sn,t:cElapsed,piste:PISTE}))
+  };
+  // Éviter les doublons : même session + même date
+  hist=hist.filter(function(h){return !(h.session===entry.session&&h.date===entry.date);});
+  hist.unshift(entry); // plus récent en premier
+  if(hist.length>20)hist=hist.slice(0,20); // max 20 sessions
+  saveHistory(hist);
+  toast('🗃 Session archivée — '+entry.session);
+  // Rafraîchir la section historique si visible
+  var hb=document.getElementById('hist-body');if(hb)hb.innerHTML=renderHistoryHTML();
+}
+
+function renderHistoryHTML(){
+  var hist=getHistory();
+  if(!hist.length)return '<div class="hist-empty">Aucune session archivée</div>';
+  return '<div class="hist-list">'+hist.map(function(h){
+    var examLbl={gt:'BAC G&T',pro:'BAC PRO',cap:'1ÈRES PRO'}[h.exam]||h.exam;
+    return '<div class="hist-item">'+
+      '<div class="hist-info">'+
+        '<div class="hist-title">'+h.session+'</div>'+
+        '<div class="hist-meta">'+h.date+' · '+examLbl+' · '+h.eleves+' élève(s)'+(h.avg?' · Moy : '+h.avg+'/20':'')+(h.piste?' · '+h.piste+'m':'')+'</div>'+
+      '</div>'+
+      '<button class="hist-btn load" onclick="loadSession('+h.id+')">📂 Charger</button>'+
+      '<button class="hist-btn del" onclick="deleteSession('+h.id+')">✕</button>'+
+    '</div>';
+  }).join('')+'</div>';
+}
+
+function loadSession(id){
+  if(!confirm('Charger cette session ? La session courante sera remplacée.'))return;
+  var hist=getHistory();
+  var entry=null;for(var i=0;i<hist.length;i++)if(hist[i].id===id){entry=hist[i];break;}
+  if(!entry||!entry.snapshot)return;
+  var d=entry.snapshot;
+  eleves=(d.e||[]).map(function(e){return{n:e.n||'',p:e.p||'',c:e.c||'',x:e.x||'M',t:e.t||0,a:e.a||0,extra:e.extra||0,s:e.s||'ok',laps:e.laps||[]};});
+  EXAM=d.x||'gt';_sn=d.s||'';cElapsed=d.t||0;PISTE=d.piste||200;
+  _locked=false;_finDone=false;_warnDone=false;
+  cRunning=false;clearInterval(cTimer);cTimer=null;
+  save();updateBadge();renderImport();renderTerrain();renderResults();updateTabDots();
+  toast('📂 Session chargée — '+entry.session);
+  goTab('terrain');
+}
+
+function deleteSession(id){
+  if(!confirm('Supprimer cette session archivée ?'))return;
+  var hist=getHistory().filter(function(h){return h.id!==id;});
+  saveHistory(hist);
+  var hb=document.getElementById('hist-body');if(hb)hb.innerHTML=renderHistoryHTML();
+  toast('🗑 Session supprimée');
+}
+
+// ═══════════════════════════════════════
+// EXPORT PNG (canvas natif, sans lib)
+// ═══════════════════════════════════════
+function exportPNG(){
+  goTab('results');
+  setTimeout(function(){_doPNG();},200);
+}
+function _doPNG(){
+  var res=calcRes();var rangs=getRangs(res);res.forEach(function(r){r.rang=rangs[r.i]||999;});
+  var sorted=res.slice().sort(function(a,b){return(a.rang||999)-(b.rang||999);});
+  var dark=document.body.classList.contains('dark');
+  var BG=dark?'#111':'#FFFFFF';
+  var SURFACE=dark?'#1C2130':'#F8F5F0';
+  var BORDER=dark?'#252D3D':'#D8D3CA';
+  var TEXT=dark?'#F0EDE6':'#1A1714';
+  var MUTED=dark?'#6A7490':'#7A7268';
+  var GREEN=dark?'#00E676':'#0E8A4A';
+  var YELLOW=dark?'#FFD600':'#B87000';
+  var RED=dark?'#FF3D3D':'#C42020';
+  var ORANGE=dark?'#FF6A00':'#E85A00';
+
+  var COL_W=[40,180,40,60,100,80,80]; // widths
+  var TOTAL_W=COL_W.reduce(function(a,b){return a+b;},0)+40; // +padding
+  var ROW_H=36;
+  var HDR_H=100;
+  var FOOTER_H=32;
+  var H=HDR_H+(sorted.length+1)*ROW_H+FOOTER_H+20;
+
+  var canvas=document.createElement('canvas');
+  var dpr=window.devicePixelRatio||1;
+  canvas.width=TOTAL_W*dpr;canvas.height=H*dpr;
+  canvas.style.width=TOTAL_W+'px';canvas.style.height=H+'px';
+  var ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+
+  // Fond
+  ctx.fillStyle=BG;ctx.fillRect(0,0,TOTAL_W,H);
+
+  // En-tête
+  ctx.fillStyle=ORANGE;
+  ctx.font='bold 22px Barlow Condensed,Arial';ctx.textAlign='left';
+  ctx.fillText('🚶 MARCHE 30\' — EPS POMPIDOU',20,36);
+  ctx.fillStyle=MUTED;ctx.font='13px JetBrains Mono,monospace';
+  var sub=(_sn||new Date().toLocaleDateString('fr-FR'))+' · '+examLabel()+' · Piste '+PISTE+'m';
+  ctx.fillText(sub,20,58);
+  // Stats
+  var notes2=res.filter(function(r){return r.note!==null&&r.e.s==='ok';}).map(function(r){return r.note;});
+  var avg2=notes2.length?(notes2.reduce(function(a,b){return a+b;},0)/notes2.length).toFixed(1):'—';
+  ctx.fillStyle=TEXT;ctx.font='bold 13px JetBrains Mono,monospace';
+  ctx.fillText('Élèves : '+eleves.length+'  |  Notés : '+notes2.length+'  |  Moyenne : '+avg2+'/20  |  Max : '+(notes2.length?Math.max.apply(null,notes2):'—')+'  Min : '+(notes2.length?Math.min.apply(null,notes2):'—'),20,80);
+
+  // Ligne séparatrice
+  ctx.strokeStyle=BORDER;ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(20,92);ctx.lineTo(TOTAL_W-20,92);ctx.stroke();
+
+  // En-têtes colonnes
+  var COLS=['#','Élève','Sx','Tours','Distance','Pénalité','Note /20'];
+  var x=20,y=HDR_H;
+  ctx.fillStyle=SURFACE;ctx.fillRect(0,y-ROW_H+4,TOTAL_W,ROW_H);
+  ctx.fillStyle=MUTED;ctx.font='bold 10px JetBrains Mono,monospace';ctx.textAlign='left';
+  for(var c=0;c<COLS.length;c++){
+    ctx.fillText(COLS[c].toUpperCase(),x+4,y-8);
+    x+=COL_W[c];
+  }
+
+  // Lignes
+  sorted.forEach(function(r,idx){
+    var e=r.e;var sp=e.s!=='ok';
+    var rowY=HDR_H+idx*ROW_H;
+    // Fond alterné
+    if(idx%2===1){ctx.fillStyle=dark?'rgba(255,255,255,.03)':'rgba(0,0,0,.03)';ctx.fillRect(0,rowY,TOTAL_W,ROW_H);}
+    // Couleur note
+    var noteColor=sp?MUTED:r.note===null?MUTED:r.note>=12?GREEN:r.note>=8?YELLOW:RED;
+    var x2=20,ty=rowY+23;
+    ctx.textAlign='left';
+    // Rang
+    var rb=sp?'—':r.rang<=3?['🥇','🥈','🥉'][r.rang-1]:String(r.rang);
+    ctx.fillStyle=TEXT;ctx.font='bold 13px Barlow Condensed,Arial';
+    ctx.fillText(rb,x2+4,ty);x2+=COL_W[0];
+    // Nom
+    ctx.font='bold 13px Barlow,Arial';
+    ctx.fillText((e.n+' '+e.p).substring(0,22),x2+4,ty);x2+=COL_W[1];
+    // Sexe
+    ctx.fillStyle=e.x==='F'?ORANGE:'#2B72F0';ctx.font='bold 11px JetBrains Mono,monospace';
+    ctx.fillText(e.x,x2+4,ty);x2+=COL_W[2];
+    // Tours
+    ctx.fillStyle=TEXT;
+    ctx.fillText(sp?e.s.toUpperCase():String(e.t),x2+4,ty);x2+=COL_W[3];
+    // Distance
+    ctx.fillText(sp?'':r.d+'m'+(e.extra>0?' +'+e.extra:''),x2+4,ty);x2+=COL_W[4];
+    // Pénalité
+    ctx.fillStyle=e.a>0?RED:MUTED;
+    ctx.fillText(sp?'':e.a>0?'-'+r.pen.toFixed(1)+'pt':'0',x2+4,ty);x2+=COL_W[5];
+    // Note
+    ctx.fillStyle=noteColor;ctx.font='bold 18px Barlow Condensed,Arial';ctx.textAlign='center';
+    ctx.fillText(sp?e.s.toUpperCase():r.note!==null?String(r.note):'—',x2+COL_W[6]/2,ty);
+    // Ligne séparatrice
+    ctx.strokeStyle=BORDER;ctx.lineWidth=0.5;
+    ctx.beginPath();ctx.moveTo(20,rowY+ROW_H-1);ctx.lineTo(TOTAL_W-20,rowY+ROW_H-1);ctx.stroke();
+  });
+
+  // Footer
+  var fy=HDR_H+sorted.length*ROW_H+16;
+  ctx.fillStyle=MUTED;ctx.font='11px JetBrains Mono,monospace';ctx.textAlign='left';
+  ctx.fillText('Généré le '+new Date().toLocaleString('fr-FR')+' · Marche 30\' EPS Pompidou',20,fy);
+
+  // Télécharger
+  canvas.toBlob(function(blob){
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='resultats_marche30_'+((_sn||'session').replace(/\s+/g,'_'))+'.png';
+    a.click();
+    toast('📸 Image PNG exportée');
+  },'image/png');
+}
+
+// ═══════════════════════════════════════
+// DARK MODE
+// ═══════════════════════════════════════
+function toggleDark(){document.body.classList.toggle('dark');try{localStorage.setItem('m30_dark',document.body.classList.contains('dark')?'1':'0');}catch(e){}}
+
+// ═══════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════
+var _toastTimer=null;
+function toast(msg){var el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.classList.add('show');clearTimeout(_toastTimer);_toastTimer=setTimeout(function(){el.classList.remove('show');},2800);}
+</script>
 </body>
 </html>
