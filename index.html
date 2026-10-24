@@ -393,7 +393,11 @@ body.race-mode #page-terrain .scnum{width:28px;height:28px;font-size:13px;border
 .hist-btn:active{transform:scale(.93)}
 .hist-btn.load{border-color:var(--blue-l);color:var(--blue-l)}
 .hist-btn.del{border-color:var(--red);color:var(--red)}
-.hist-empty{padding:24px;text-align:center;color:var(--muted);font-size:13px;font-style:italic}</style>
+.hist-empty{padding:24px;text-align:center;color:var(--muted);font-size:13px;font-style:italic}/* Daltonisme : un signe en plus de la couleur (✓ atteint, ! limite, ✗ insuffisant) */
+.ok .sn-val::after,.ok .ss-val::after{content:" ✓";font-size:.7em;font-weight:900;vertical-align:.15em}
+.warn .sn-val::after,.warn .ss-val::after{content:" !";font-size:.7em;font-weight:900;vertical-align:.15em}
+.bad .sn-val::after,.bad .ss-val::after{content:" ✗";font-size:.7em;font-weight:900;vertical-align:.15em}
+</style>
 
 <style id="appicon-css">.appicon{width:40px;height:40px;border-radius:9px;vertical-align:middle;margin:0 10px 0 0;box-shadow:0 1px 3px rgba(0,0,0,.25);flex:none;display:inline-block;object-fit:cover}
 .appicon.big{width:72px;height:72px;border-radius:16px;margin:0 auto 10px;display:block}
