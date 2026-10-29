@@ -422,6 +422,7 @@ body.race-mode #page-terrain .scnum{width:28px;height:28px;font-size:max(13px,va
   <div id="hexam-badge" class="hexam-badge gt" onclick="onBadgeClick()">BAC G&T</div>
   <div class="hspace"></div>
   <button class="hbtn" onclick="toggleDark()" title="Mode sombre/clair">🌙</button>
+  <button class="hbtn" onclick="EPSAide.ouvrir()" title="Mode d’emploi" aria-label="Mode d’emploi" style="font-weight:900">?</button>
   <button class="hbtn" onclick="clearAll()" title="Effacer session">🗑</button>
 </div>
 
@@ -1366,5 +1367,18 @@ var _toastTimer=null;
 function toast(msg){var el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.classList.add('show');clearTimeout(_toastTimer);_toastTimer=setTimeout(function(){el.classList.remove('show');},2800);}
 </script>
 <script>if('serviceWorker' in navigator&&location.protocol==='https:'){addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}</script>
+<script>
+/* Chrono qui survit au rechargement et à la mise en veille : état gardé sur l'appareil, calculé sur l'heure réelle. */
+(function(){var K='m30_chrono';
+var s0=save;save=function(){s0.apply(this,arguments);try{localStorage.setItem(K,JSON.stringify({run:cRunning,ct:cElapsed+(cRunning&&cStart?Date.now()-cStart:0),at:Date.now()}))}catch(e){}};
+try{var o=JSON.parse(localStorage.getItem(K)||'null');
+  if(o&&o.run&&Date.now()-o.at<4*3600e3){cElapsed=o.ct+(Date.now()-o.at);cStart=Date.now();cRunning=true;clearInterval(cTimer);cTimer=setInterval(cTick,500);lockExam();renderChronoDisplay();
+    cTick();toast('⏱ Chrono repris')}}catch(e){}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')save()});
+addEventListener('pagehide',function(){save()});
+})();
+</script>
+<script src="aide.js"></script>
+<script src="eps-aide.js"></script>
 </body>
 </html>
