@@ -975,7 +975,10 @@ function toggleLaps(i){var d=document.getElementById('laps-'+i);if(!d)return;d.c
 // ═══════════════════════════════════════
 function tap(i){
   if(eleves[i].s!=='ok')return;
-  eleves[i].t++;if(!eleves[i].laps)eleves[i].laps=[];eleves[i].laps.push(cElapsed);
+  // après les 30 min, un tour de plus ne compte pas : la fin du dernier tour se note en mètres (boutons +m)
+  var ecoule=cElapsed+(cRunning?Date.now()-cStart:0);
+  if(ecoule>=DUREE){toast('⛔ 30 min écoulées : ce tour ne compte pas. Ajoute les mètres du dernier tour (+m).');return;}
+  eleves[i].t++;if(!eleves[i].laps)eleves[i].laps=[];eleves[i].laps.push(ecoule);
   save();updateCard(i);updateTabDots();
   beep(880,0.07,0.12);
   var b=document.getElementById('tap-'+i);if(b){b.classList.add('tapped');setTimeout(function(){b.classList.remove('tapped');},150);}
